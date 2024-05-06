@@ -1,18 +1,15 @@
 <script lang="ts" context="module">
-	import type {
-		OnCreateParticle,
-		OnUpdateParticle,
-		Particle,
-		ParticleStyle,
-		Position
-	} from './utils/types';
+	import type { OnCreateParticle, OnUpdateParticle, Particle, ParticleStyle, Position } from './utils/types';
+
 	import { COLORS } from './utils/constants';
 	import { createParticle, isOutOfBounds, renderParticle, updateParticle } from './utils/particle';
 
 	const renderParticles = (context: CanvasRenderingContext2D, particles: Particle[]) => {
 		context.clearRect(0, 0, context.canvas.width, context.canvas.height);
 
+		// eslint-disable-next-line no-loops/no-loops
 		for (let i = 0; i < particles.length; ++i) {
+			// eslint-disable-next-line security/detect-object-injection
 			renderParticle(context, particles[i]);
 		}
 	};
@@ -20,22 +17,19 @@
 	/**
 	 * @returns {boolean} Returns false if no more confettis on the screen.
 	 */
-	const updateParticles = (
-		context: CanvasRenderingContext2D,
-		particles: Particle[],
-		dt: number,
-		onUpdate?: OnUpdateParticle
-	) => {
+	const updateParticles = (context: CanvasRenderingContext2D, particles: Particle[], dt: number, onUpdate?: OnUpdateParticle) => {
 		let livingParticles = particles.length;
 
+		// eslint-disable-next-line no-loops/no-loops
 		for (let i = 0; i < particles.length; ++i) {
-			const p = particles[i];
-			if (p.dead) {
+			// eslint-disable-next-line security/detect-object-injection
+			const P = particles[i];
+			if (P.dead) {
 				livingParticles--;
 			} else {
-				updateParticle(p, dt);
-				if (isOutOfBounds(context, p)) p.dead = true;
-				if (onUpdate) onUpdate(p, dt);
+				updateParticle(P, dt);
+				if (isOutOfBounds(context, P)) P.dead = true;
+				if (onUpdate) onUpdate(P, dt);
 			}
 		}
 
@@ -52,21 +46,20 @@
 		spread: number,
 		styles: (HTMLImageElement | string)[],
 		onCreate?: OnCreateParticle,
-		onUpdate?: OnUpdateParticle
+		onUpdate?: OnUpdateParticle,
 	) => {
-		const context = canvas.getContext('2d');
-		if (!context) throw new Error('No context?');
+		const CONTEXT = canvas.getContext('2d');
+		if (!CONTEXT) throw new Error('No context?');
 
-		const particles: Particle[] = Array.from({ length: particleCount }, () =>
-			createParticle(context, origin, force, angle, spread, styles, onCreate)
-		);
+		const PARTICLES: Particle[] = Array.from({ length: particleCount }, () => createParticle(CONTEXT, origin, force, angle, spread, styles, onCreate));
 
-		let frameId: number, t: number;
+		let frameId: number;
+		let t: number;
 
 		const run = (_t: number) => {
-			renderParticles(context, particles);
-			const stillRunning = updateParticles(context, particles, (_t - t) / 1e3, onUpdate);
-			if (stillRunning) {
+			renderParticles(CONTEXT, PARTICLES);
+			const STILL_RUNNING = updateParticles(CONTEXT, PARTICLES, (_t - t) / 1e3, onUpdate);
+			if (STILL_RUNNING) {
 				t = _t;
 				frameId = requestAnimationFrame(run);
 			} else {
@@ -142,7 +135,7 @@
 	 */
 	export let spread = 360;
 	/**
-	 * By default, each particle is created with some random variation. The initial values of each particle can be overriden using the onCreate callback.
+	 * By default, each particle is created with some random variation. The initial values of each particle can be overridden using the onCreate callback.
 	 * @default undefined
 	 * @example
 	 * ```
@@ -173,24 +166,15 @@
 	export let onUpdate: OnUpdateParticle | undefined = undefined;
 
 	const dispatch = createEventDispatcher();
+
 	let canvas: HTMLCanvasElement;
-	let w: number, h: number;
+	let w: number;
+	let h: number;
 
 	onMount(() => {
 		canvas.width = w;
 		canvas.height = h;
-		return start(
-			canvas,
-			() => dispatch('completed'),
-			particleCount,
-			origin,
-			force,
-			angle,
-			spread,
-			styles,
-			onCreate,
-			onUpdate
-		);
+		return start(canvas, () => dispatch('completed'), particleCount, origin, force, angle, spread, styles, onCreate, onUpdate);
 	});
 </script>
 
@@ -202,9 +186,9 @@
 		position: fixed;
 		top: 0;
 		left: 0;
+		z-index: 999999;
 		width: 100%;
 		height: 100%;
 		pointer-events: none;
-		z-index: 999999;
 	}
 </style>

@@ -1,6 +1,7 @@
 <script lang="ts">
-	import Confetti from './Confetti.svelte';
 	import type { OnCreateParticle, OnUpdateParticle, ParticleStyle } from './utils/types';
+
+	import Confetti from './Confetti.svelte';
 
 	/**
 	 * A list of render styles to use for the confetti. Each confetti will be assigned a random value from the list.
@@ -22,7 +23,7 @@
 	 */
 	export let particleCount = 50;
 	/**
-	 * By default, each particle is created with some random variation. The initial values of each particle can be overriden using the onCreate callback.
+	 * By default, each particle is created with some random variation. The initial values of each particle can be overridden using the onCreate callback.
 	 * @default undefined
 	 * @example
 	 * ```

@@ -1,4 +1,5 @@
 export type ParticleStyle = string | HTMLImageElement;
+
 export type Position = [number, number];
 
 export type Particle = {
@@ -19,4 +20,5 @@ export type Particle = {
 };
 
 export type OnCreateParticle = (p: Particle) => Particle;
+
 export type OnUpdateParticle = (p: Particle, dt: number) => void;

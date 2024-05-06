@@ -1,6 +1,7 @@
 <script lang="ts">
-	import Confetti from './Confetti.svelte';
 	import type { OnCreateParticle, OnUpdateParticle, ParticleStyle, Position } from './utils/types';
+
+	import Confetti from './Confetti.svelte';
 
 	/**
 	 * The origin position of the confetti cannon.
@@ -58,7 +59,7 @@
 	 */
 	export let spread = 360;
 	/**
-	 * By default, each particle is created with some random variation. The initial values of each particle can be overriden using the onCreate callback.
+	 * By default, each particle is created with some random variation. The initial values of each particle can be overridden using the onCreate callback.
 	 * @default undefined
 	 * @example
 	 * ```
@@ -89,14 +90,4 @@
 	export let onUpdate: OnUpdateParticle | undefined = undefined;
 </script>
 
-<Confetti
-	{particleCount}
-	{origin}
-	{force}
-	{spread}
-	{angle}
-	{styles}
-	{onCreate}
-	{onUpdate}
-	on:completed
-/>
+<Confetti {particleCount} {origin} {force} {spread} {angle} {styles} {onCreate} {onUpdate} on:completed />

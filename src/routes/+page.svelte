@@ -1,17 +1,11 @@
 <script lang="ts">
-	import { onMount } from 'svelte';
-	import { assets } from '$app/paths';
-	import {
-		FallingConfetti,
-		ConfettiBurst,
-		ConfettiCannon,
-		random,
-		coinFlip,
-		type Particle,
-		type OnCreateParticle,
-		type OnUpdateParticle
-	} from '$lib';
 	import type { ParticleStyle, Position } from '$lib/utils/types';
+
+	import { assets } from '$app/paths';
+
+	import { onMount } from 'svelte';
+
+	import { FallingConfetti, ConfettiBurst, ConfettiCannon, random, coinFlip, type Particle, type OnCreateParticle, type OnUpdateParticle } from '$lib';
 
 	let counter = 0;
 	let particleCount = Math.floor(random(100, 1));
@@ -28,8 +22,8 @@
 			...fallingConfettis,
 			{
 				id: counter++,
-				particleCount
-			}
+				particleCount,
+			},
 		];
 	};
 
@@ -57,8 +51,8 @@
 					if ((p.angle > 35 && p.da > 0) || (p.angle < -35 && p.da < 0)) {
 						p.da *= -1;
 					}
-				}
-			}
+				},
+			},
 		];
 	};
 
@@ -69,11 +63,8 @@
 			{
 				id: counter++,
 				particleCount,
-				origin: [
-					random((window.innerWidth / 4) * 3, window.innerWidth / 4),
-					random((window.innerHeight / 4) * 3, window.innerHeight / 4)
-				]
-			}
+				origin: [random((window.innerWidth / 4) * 3, window.innerWidth / 4), random((window.innerHeight / 4) * 3, window.innerHeight / 4)],
+			},
 		];
 	};
 
@@ -96,8 +87,8 @@
 				spread: random(90, 25),
 				angle: random(65, 25) + (left ? 270 : 180),
 				force: random(55, 25),
-				origin: [left ? 0 : window.innerWidth, window.innerHeight]
-			}
+				origin: [left ? 0 : window.innerWidth, window.innerHeight],
+			},
 		];
 	};
 </script>
@@ -113,14 +104,7 @@
 	<div class="vertical">
 		<div class="horizontal">
 			<label for="particle-count">Particle Count</label>
-			<input
-				id="particle-count"
-				type="range"
-				min="5"
-				max="200"
-				bind:value={particleCount}
-				step="1"
-			/>
+			<input id="particle-count" type="range" min="5" max="200" bind:value={particleCount} step="1" />
 			<span>{particleCount}</span>
 		</div>
 	</div>
@@ -171,10 +155,11 @@
 </main>
 
 <style>
+	/* stylelint-disable-next-line selector-pseudo-class-no-unknown */
 	:global(body) {
-		margin: 0;
 		width: 100vw;
 		height: 100vh;
+		margin: 0;
 		font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
 	}
 
@@ -199,42 +184,44 @@
 	}
 
 	button {
-		cursor: pointer;
+		padding: 0.75rem 2rem;
 		border: none;
 		border-radius: 4px;
-		padding: 0.75rem 2rem;
 		margin: 1rem;
-		font-weight: bold;
-		font-size: 1rem;
-		font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+		box-shadow: 5px 5px 0 0 rgba(0 0 0 / 80%);
+		background: linear-gradient(-45deg, hsl(260deg 95% 75%), hsl(300deg 95% 75%));
 		color: white;
-		background: linear-gradient(-45deg, hsl(260, 95%, 75%), hsl(300, 95%, 75%));
-		box-shadow: 5px 5px 0 0 rgba(0, 0, 0, 0.8);
-		text-shadow: -1px -1px rgba(0, 0, 0, 0.6);
-		transition: transform 0.1s ease-in-out, box-shadow 0.1s ease-in-out;
+		font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+		font-size: 1rem;
+		font-weight: bold;
+		text-shadow: -1px -1px rgba(0 0 0 / 60%);
+		transition:
+			transform 0.1s ease-in-out,
+			box-shadow 0.1s ease-in-out;
+		cursor: pointer;
 	}
 
 	button:hover {
-		background: linear-gradient(-45deg, hsl(260, 95%, 65%), hsl(300, 95%, 65%));
+		background: linear-gradient(-45deg, hsl(260deg 95% 65%), hsl(300deg 95% 65%));
 	}
 
 	button:active {
+		box-shadow: 3px 3px 0 0 rgba(0 0 0 / 80%);
 		transform: translate(2px, 2px);
-		box-shadow: 3px 3px 0 0 rgba(0, 0, 0, 0.8);
 	}
 
 	input {
-		accent-color: hsl(260, 95%, 65%);
+		accent-color: hsl(260deg 95% 65%);
 	}
 
 	[type='range'] {
-		min-width: 300px;
 		width: 50%;
+		min-width: 300px;
 	}
 
 	label {
-		min-width: 150px;
 		flex: none;
+		min-width: 150px;
 		margin-right: 2rem;
 	}
 

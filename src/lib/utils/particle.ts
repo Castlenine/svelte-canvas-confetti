@@ -1,6 +1,7 @@
+import type { OnCreateParticle, Particle, Position } from './types';
+
 import { BOUNDARY, DEG_TO_RAD, MOVEMENT_SPEED, ROTATION_SPEED } from './constants';
 import { random } from './random';
-import type { OnCreateParticle, Particle, Position } from './types';
 
 export const createParticle = (
 	context: CanvasRenderingContext2D,
@@ -9,17 +10,17 @@ export const createParticle = (
 	angle: number,
 	spread: number,
 	styles: (HTMLImageElement | string)[],
-	onCreate?: OnCreateParticle
+	onCreate?: OnCreateParticle,
 ) => {
-	let dir,
-		x,
-		y,
-		vx,
-		vy,
-		dx,
-		dy,
-		style = styles[Math.floor(random(styles.length))],
-		da = random(90, -90);
+	let dir;
+	let x;
+	let y;
+	let vx;
+	let vy;
+	let dx;
+	let dy;
+	const style = styles[Math.floor(random(styles.length))];
+	let da = random(90, -90);
 
 	if (origin) {
 		// When we have an origin, we create a confetti burst
@@ -38,7 +39,9 @@ export const createParticle = (
 		dir = random(180) * DEG_TO_RAD;
 	}
 
+	// eslint-disable-next-line prefer-const
 	dx = Math.cos(dir);
+	// eslint-disable-next-line prefer-const
 	dy = Math.sin(dir);
 
 	let particle: Particle = {
@@ -55,7 +58,7 @@ export const createParticle = (
 		h: random(6, 4),
 		gy: random(4.5, 2),
 		xw: random(6, 1),
-		style
+		style,
 	};
 
 	if (onCreate) particle = onCreate(particle);
@@ -91,6 +94,4 @@ export const updateParticle = (p: Particle, dt: number) => {
 };
 
 export const isOutOfBounds = (context: CanvasRenderingContext2D, p: Particle) =>
-	p.x < -BOUNDARY ||
-	p.x > context.canvas.width + BOUNDARY ||
-	p.y > context.canvas.height + BOUNDARY;
+	p.x < -BOUNDARY || p.x > context.canvas.width + BOUNDARY || p.y > context.canvas.height + BOUNDARY;

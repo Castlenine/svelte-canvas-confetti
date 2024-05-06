@@ -1,4 +1,11 @@
-# svelte-canvas-confetti 🎉
+<div align="center">
+
+# `@castlenine/svelte-canvas-confetti`
+
+[![npm.badge]][npm] [![download.badge]][download]
+
+Canvas-based confetti for Svelte 🎉, without dependencies
+</div>
 
 ## Features
 
@@ -8,16 +15,16 @@
 
 ## Examples
 
-[Simple Demo](https://svelte.dev/repl/651daab486674a71a750b711aac76a7d?version=3.50.1)
+[Simple Demo](https://svelte.dev/repl/84bb431468264dabbfdd0750ef949f9f?version=3.50.1)
 
-[Firework Demo](https://svelte.dev/repl/abee117c2a8848c68299d00605529b66?version=3.50.1)
+[Firework Demo](https://svelte.dev/repl/8d05b7c60c244fe0b7e09b027dd3bc5d?version=3.50.1)
 
-[Advanced Demo](https://svelte.dev/repl/32552f9527e54eafb2e6d95af183212b?version=3.50.1)
+[Advanced Demo](https://svelte.dev/repl/5cefe21763c445d986c6e23ddea1327a?version=3.50.1)
 
 ## Installing
 
-```
-npm install svelte-canvas-confetti
+```bash
+npm i @castlenine/svelte-canvas-confetti
 ```
 
 ## Basic Usage
@@ -30,7 +37,7 @@ Adds confetti falling from the top of the screen.
 
 ```svelte
 <script>
-  import { FallingConfetti } from 'svelte-canvas-confetti';
+  import { FallingConfetti } from '@castlenine/svelte-canvas-confetti';
 </script>
 
 <FallingConfetti />
@@ -42,7 +49,7 @@ Adds a confetti burst anywhere on the screen. It requires an origin position.
 
 ```svelte
 <script>
-  import { ConfettiBurst } from 'svelte-canvas-confetti';
+  import { ConfettiBurst } from '@castlenine/svelte-canvas-confetti';
 </script>
 
 <ConfettiBurst origin={[window.innerWidth / 2, window.innerHeight / 2]} />
@@ -54,7 +61,7 @@ Adds a confetti cannon that can shoot out directional confetti. It requires an o
 
 ```svelte
 <script>
-  import { ConfettiCannon } from 'svelte-canvas-confetti';
+  import { ConfettiCannon } from '@castlenine/svelte-canvas-confetti';
 </script>
 
 <ConfettiCannon origin={[window.innerWidth / 2, window.innerHeight]} />
@@ -62,13 +69,13 @@ Adds a confetti cannon that can shoot out directional confetti. It requires an o
 
 ### Confetti
 
-Adds any type of confetti. This is the main component that the other three are just simple wrappers around. 
+Adds any type of confetti. This is the main component that the other three are just simple wrappers around.
 
 If no properties are passed in, it will create the same result as **FallingConfetti**.
 
 ```svelte
 <script>
-  import { Confetti } from 'svelte-canvas-confetti';
+  import { Confetti } from '@castlenine/svelte-canvas-confetti';
 </script>
 
 <Confetti />
@@ -157,12 +164,12 @@ This can be used to override the properties of each particle at creation time.
 **Example:**
 
 ```svelte
-<Confetti 
+<Confetti
   onCreate={(particle) => {
     particle.x = 0;
     particle.y = 0;
     return particle;
-  }} 
+  }}
 />
 ```
 
@@ -175,23 +182,23 @@ This can be used to override the properties of each particle at update time.
 **Example:**
 
 ```svelte
-<Confetti 
+<Confetti
   onCreate={(particle) => {
     particle.x += Math.random() * 5;
-  }} 
+  }}
 />
 ```
 
 ## Particle object
 
-```ts
+```typescript
 export type Particle = {
-  // Stop updating/rendering the particle once it is "dead" (ie off screen) 
+  // Stop updating/rendering the particle once it is "dead" (ie off screen)
   dead: boolean;
-  
+
   // The total time since the particle was created.
   life: number;
-  
+
   // The delay between the creation of the particle and when it starts updating/rendering (in seconds).
   delay: number;
 
@@ -230,6 +237,11 @@ export type Particle = {
 };
 ```
 
-## License
+---
 
-MIT License @copy; [Andreas McDermott](https://github.com/andreasmcdermott)
+Forked from [andreasmcdermott/svelte-canvas-confetti](https://github.com/andreasmcdermott/svelte-canvas-confetti)
+
+[npm]: https://www.npmjs.com/package/@castlenine/svelte-canvas-confetti
+[npm.badge]: https://img.shields.io/npm/v/@castlenine/svelte-canvas-confetti
+[download]: https://www.npmjs.com/package/@castlenine/svelte-canvas-confetti
+[download.badge]: https://img.shields.io/npm/d18m/@castlenine/svelte-canvas-confetti
