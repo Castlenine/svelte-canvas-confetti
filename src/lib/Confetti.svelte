@@ -10,7 +10,8 @@
 		// eslint-disable-next-line no-loops/no-loops
 		for (let i = 0; i < particles.length; ++i) {
 			// eslint-disable-next-line security/detect-object-injection
-			renderParticle(context, particles[i]);
+			const P = particles[i];
+			if (!P.dead && P.life >= P.delay) renderParticle(context, P);
 		}
 	};
 
@@ -18,6 +19,8 @@
 	 * @returns {boolean} Returns false if no more confettis on the screen.
 	 */
 	const updateParticles = (context: CanvasRenderingContext2D, particles: Particle[], dt: number, onUpdate?: OnUpdateParticle) => {
+		const CW = context.canvas.width;
+		const CH = context.canvas.height;
 		let livingParticles = particles.length;
 
 		// eslint-disable-next-line no-loops/no-loops
@@ -28,7 +31,7 @@
 				livingParticles--;
 			} else {
 				updateParticle(P, dt);
-				if (isOutOfBounds(context, P)) P.dead = true;
+				if (isOutOfBounds(P, CW, CH)) P.dead = true;
 				if (onUpdate) onUpdate(P, dt);
 			}
 		}
@@ -44,7 +47,7 @@
 		force: number,
 		angle: number,
 		spread: number,
-		styles: (HTMLImageElement | string)[],
+		styles: ParticleStyle[],
 		onCreate?: OnCreateParticle,
 		onUpdate?: OnUpdateParticle,
 	) => {
@@ -58,7 +61,8 @@
 
 		const run = (_t: number) => {
 			renderParticles(CONTEXT, PARTICLES);
-			const STILL_RUNNING = updateParticles(CONTEXT, PARTICLES, (_t - t) / 1e3, onUpdate);
+			const DT = Math.min((_t - t) / 1e3, 0.1);
+			const STILL_RUNNING = updateParticles(CONTEXT, PARTICLES, DT, onUpdate);
 			if (STILL_RUNNING) {
 				t = _t;
 				frameId = requestAnimationFrame(run);

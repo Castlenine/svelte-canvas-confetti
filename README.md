@@ -2,16 +2,16 @@
 
 # `@castlenine/svelte-canvas-confetti`
 
-[![npm.badge]][npm] [![download.badge]][download]
+[![npm.badge]][npm] [![download.badge]][download] [![contribution.badge]][contribution]
 
-Canvas-based confetti for Svelte 🎉, without dependencies
+Canvas-based confetti for Svelte 🎉, with no dependencies.
 </div>
 
 ## Features
 
 * Uses a single canvas to render full-screen confetti.
 * Supports image-based confetti.
-* Allows full customization of confetti behavior using `onCreate` and `onUpdate` hooks.
+* Allows full customization of confetti behavior using the `onCreate` and `onUpdate` hooks.
 
 ## Examples
 
@@ -21,9 +21,11 @@ Canvas-based confetti for Svelte 🎉, without dependencies
 
 [Advanced Demo](https://svelte.dev/repl/5cefe21763c445d986c6e23ddea1327a?version=3.50.1)
 
-## Installing
+## Installation
 
-```bash
+Use your package manager to install:
+
+```shell
 npm i @castlenine/svelte-canvas-confetti
 ```
 
@@ -45,7 +47,7 @@ Adds confetti falling from the top of the screen.
 
 ### ConfettiBurst
 
-Adds a confetti burst anywhere on the screen. It requires an origin position.
+Adds a confetti burst anywhere on the screen. Requires an origin position.
 
 ```svelte
 <script>
@@ -57,7 +59,7 @@ Adds a confetti burst anywhere on the screen. It requires an origin position.
 
 ### ConfettiCannon
 
-Adds a confetti cannon that can shoot out directional confetti. It requires an origin position.
+Adds a confetti cannon that can shoot directional confetti. Requires an origin position.
 
 ```svelte
 <script>
@@ -69,9 +71,9 @@ Adds a confetti cannon that can shoot out directional confetti. It requires an o
 
 ### Confetti
 
-Adds any type of confetti. This is the main component that the other three are just simple wrappers around.
+Adds any type of confetti. This is the main component, and the other three are simple wrappers around it.
 
-If no properties are passed in, it will create the same result as **FallingConfetti**.
+If no properties are passed in, it will behave the same as **FallingConfetti**.
 
 ```svelte
 <script>
@@ -85,7 +87,7 @@ If no properties are passed in, it will create the same result as **FallingConfe
 
 ### particleCount
 
-Number of particles to create.
+The number of particles to create.
 
 **Type:** `number`
 **Default value:** `50`
@@ -97,10 +99,10 @@ Number of particles to create.
 
 ### styles
 
-A list of styles used to render particles. Can be any valid HTML color or an HTMLImageElement.
+A list of styles used to render particles. Can be any valid HTML color or an `HTMLImageElement`.
 
-**Type:** `Array<string | HTMLImageElement>`
-**Default value:** `['hotpink','gold','dodgerblue','tomato','rebeccapurple','lightgreen','turquoise']`
+**Type:** `ParticleStyle[]`
+**Default value:** `['hotpink', 'gold', 'dodgerblue', 'tomato', 'rebeccapurple', 'lightgreen', 'turquoise']`
 **Example:**
 
 ```svelte
@@ -109,9 +111,9 @@ A list of styles used to render particles. Can be any valid HTML color or an HTM
 
 ### origin
 
-The origin of the particles. If this is not used, the particles will fall from the top of the screen.
+The origin of the particles. If this is not provided, the particles will fall from the top of the screen.
 
-**Type:** `[number, number]`
+**Type:** `Position`
 **Default value:** `undefined`
 **Example:**
 
@@ -133,7 +135,7 @@ The initial force used to shoot out confetti. This has no effect if `origin` is 
 
 ### angle
 
-The angle used to shoot out confetti. This has no effect if `origin` is not used. It can be combined with `spread` to create a "cannon".
+The angle used to shoot out confetti. This has no effect if `origin` is not used. Can be combined with `spread` to create a "cannon" effect.
 
 **Type:** `number`
 **Default value:** 0
@@ -145,7 +147,7 @@ The angle used to shoot out confetti. This has no effect if `origin` is not used
 
 ### spread
 
-The spread used when creating each particles initial direction. The particle's initial direction will be a value between `angle - spread / 2` and `angle + spread / 2`. This has no effect if `origin` is not used.
+The spread used when creating each particle’s initial direction. The particle's initial direction will be a value between `angle - spread / 2` and `angle + spread / 2`. This has no effect if `origin` is not used.
 
 **Type:** `number`
 **Default value:** 360
@@ -160,7 +162,7 @@ The spread used when creating each particles initial direction. The particle's i
 This can be used to override the properties of each particle at creation time.
 
 **Type:** `(particle) => particle`
-**Default value:** undefined
+**Default value:** `undefined`
 **Example:**
 
 ```svelte
@@ -178,12 +180,12 @@ This can be used to override the properties of each particle at creation time.
 This can be used to override the properties of each particle at update time.
 
 **Type:** `(particle, deltaTime) => void`
-**Default value:** undefined
+**Default value:** `undefined`
 **Example:**
 
 ```svelte
 <Confetti
-  onCreate={(particle) => {
+  onUpdate={(particle) => {
     particle.x += Math.random() * 5;
   }}
 />
@@ -193,7 +195,7 @@ This can be used to override the properties of each particle at update time.
 
 ```typescript
 export type Particle = {
-  // Stop updating/rendering the particle once it is "dead" (ie off screen)
+  // Stop updating/rendering the particle once it is "dead" (i.e., off screen)
   dead: boolean;
 
   // The total time since the particle was created.
@@ -229,13 +231,29 @@ export type Particle = {
   // Vertical gravity.
   gy: number;
 
-  // The "width" of the falling motion. The falling motion is calculated as Math.sin(life * xw)
+  // The "width" of the falling motion. The falling motion is calculated as Math.sin(life * xw).
   xw: number;
 
   // The style of the particle. Either an HTML color or an HTMLImageElement.
   style: ParticleStyle;
 };
 ```
+
+## Exported Types
+
+The following types are exported from the package:
+
+```typescript
+import type { Particle, ParticleStyle, Position, OnCreateParticle, OnUpdateParticle } from '@castlenine/svelte-canvas-confetti';
+```
+
+| Type | Description |
+| --- | --- |
+| `Particle` | The particle object used in `onCreate` and `onUpdate` callbacks. |
+| `ParticleStyle` | `string \| HTMLImageElement` — a valid HTML color or an image element. |
+| `Position` | `[number, number]` — an `[x, y]` coordinate tuple. |
+| `OnCreateParticle` | `(p: Particle) => Particle` — callback to customize particles at creation. |
+| `OnUpdateParticle` | `(p: Particle, dt: number) => void` — callback to modify particles each frame. |
 
 ---
 
@@ -245,3 +263,5 @@ Forked from [andreasmcdermott/svelte-canvas-confetti](https://github.com/andreas
 [npm.badge]: https://img.shields.io/npm/v/@castlenine/svelte-canvas-confetti
 [download]: https://www.npmjs.com/package/@castlenine/svelte-canvas-confetti
 [download.badge]: https://img.shields.io/npm/d18m/@castlenine/svelte-canvas-confetti
+[contribution]: https://github.com/Castlenine/svelte-aoe
+[contribution.badge]: https://img.shields.io/badge/contributions-welcome-green
