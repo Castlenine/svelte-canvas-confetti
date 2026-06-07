@@ -1,23 +1,44 @@
 <script lang="ts">
 	import type { ParticleStyle, Position } from '$lib/utils/types';
 
-	import { assets } from '$app/paths';
-
 	import { onMount } from 'svelte';
 
-	import { FallingConfetti, ConfettiBurst, ConfettiCannon, random, coinFlip, type Particle, type OnCreateParticle, type OnUpdateParticle } from '$lib';
+	import {
+		ConfettiBurst,
+		ConfettiCannon,
+		FallingConfetti,
+		type OnCreateParticle,
+		type OnUpdateParticle,
+		type Particle,
+		coinFlip,
+		random,
+	} from '$lib';
+
+	import ParachuteImage from '$lib/assets/images/parachute.png';
+
+	let particleCount = $state(Math.floor(random(100, 1)));
+	let fallingConfettis: { id: number; particleCount: number }[] = $state([]);
+	let parachutes: {
+		id: number;
+		styles: ParticleStyle[];
+		particleCount: number;
+		onCreate: OnCreateParticle;
+		onUpdate: OnUpdateParticle;
+	}[] = $state([]);
+	let confettiBursts: { id: number; particleCount: number; origin: Position }[] = $state([]);
+	let confettiCannons: {
+		id: number;
+		particleCount: number;
+		spread: number;
+		angle: number;
+		force: number;
+		origin: Position;
+	}[] = $state([]);
 
 	let counter = 0;
-	let particleCount = Math.floor(random(100, 1));
-	let img: HTMLImageElement;
+	let parachuteImg: HTMLImageElement | null = $state(null);
 
-	onMount(() => {
-		img = new Image();
-		img.src = `${assets}/parachute.png`;
-	});
-
-	let fallingConfettis: { id: number; particleCount: number }[] = [];
-	const triggerFallingConfetti = () => {
+	function triggerFallingConfetti(): void {
 		fallingConfettis = [
 			...fallingConfettis,
 			{
@@ -25,26 +46,22 @@
 				particleCount,
 			},
 		];
-	};
+	}
 
-	let parachutes: {
-		id: number;
-		styles: ParticleStyle[];
-		particleCount: number;
-		onCreate: OnCreateParticle;
-		onUpdate: OnUpdateParticle;
-	}[] = [];
-	const triggerParachutes = () => {
+	function triggerParachutes(): void {
+		if (!parachuteImg) return;
+
 		parachutes = [
 			...parachutes,
 			{
 				id: counter++,
-				styles: [img],
+				styles: [parachuteImg],
 				particleCount,
 				onCreate: (p: Particle) => {
 					p.angle = 0;
 					p.gy = 2;
 					p.da = random(35, -35);
+
 					return p;
 				},
 				onUpdate: (p: Particle) => {
@@ -54,29 +71,23 @@
 				},
 			},
 		];
-	};
+	}
 
-	let confettiBursts: { id: number; particleCount: number; origin: Position }[] = [];
-	const triggerConfettiBurst = () => {
+	function triggerConfettiBurst(): void {
 		confettiBursts = [
 			...confettiBursts,
 			{
 				id: counter++,
 				particleCount,
-				origin: [random((window.innerWidth / 4) * 3, window.innerWidth / 4), random((window.innerHeight / 4) * 3, window.innerHeight / 4)],
+				origin: [
+					random((window.innerWidth / 4) * 3, window.innerWidth / 4),
+					random((window.innerHeight / 4) * 3, window.innerHeight / 4),
+				],
 			},
 		];
-	};
+	}
 
-	let confettiCannons: {
-		id: number;
-		particleCount: number;
-		spread: number;
-		angle: number;
-		force: number;
-		origin: Position;
-	}[] = [];
-	const triggerConfettiCannon = () => {
+	function triggerConfettiCannon(): void {
 		const LEFT = coinFlip();
 
 		confettiCannons = [
@@ -90,67 +101,75 @@
 				origin: [LEFT ? 0 : window.innerWidth, window.innerHeight],
 			},
 		];
-	};
+	}
+
+	function handleFallingConfettiCompleted(id: number): void {
+		fallingConfettis = fallingConfettis.filter((c) => c.id !== id);
+	}
+
+	function handleParachuteCompleted(id: number): void {
+		parachutes = parachutes.filter((c) => c.id !== id);
+	}
+
+	function handleConfettiBurstCompleted(id: number): void {
+		confettiBursts = confettiBursts.filter((c) => c.id !== id);
+	}
+
+	function handleConfettiCannonCompleted(id: number): void {
+		confettiCannons = confettiCannons.filter((c) => c.id !== id);
+	}
+
+	onMount(() => {
+		const IMAGE = new Image();
+		IMAGE.src = ParachuteImage;
+
+		IMAGE.onload = () => {
+			parachuteImg = IMAGE;
+		};
+	});
 </script>
+
+<svelte:head>
+	<title>@castlenine/svelte-canvas-confetti</title>
+	<meta name="description" content="Canvas-based confetti for Svelte 🎉, with no dependencies." />
+</svelte:head>
 
 <main class="vertical center">
 	<div class="horizontal">
-		<button on:click={triggerFallingConfetti}>Falling Confetti!</button>
-		<button on:click={triggerConfettiBurst}>Confetti Burst!</button>
-		<button on:click={triggerConfettiCannon}>Confetti Cannon!</button>
-		<button on:click={triggerParachutes}>Parachutes!</button>
+		<button type="button" onclick={triggerFallingConfetti}>Falling Confetti!</button>
+		<button type="button" onclick={triggerConfettiBurst}>Confetti Burst!</button>
+		<button type="button" onclick={triggerConfettiCannon}>Confetti Cannon!</button>
+		<button type="button" disabled={!parachuteImg} onclick={triggerParachutes}>Parachutes!</button>
 	</div>
 
 	<div class="vertical">
 		<div class="horizontal">
 			<label for="particle-count">Particle Count</label>
-			<input id="particle-count" type="range" min="5" max="200" bind:value={particleCount} step="1" />
+			<input id="particle-count" type="range" min="5" max="200" step="1" bind:value={particleCount} />
 			<span>{particleCount}</span>
 		</div>
 	</div>
 
 	{#each fallingConfettis as { id, particleCount } (id)}
-		<FallingConfetti
-			{particleCount}
-			on:completed={() => {
-				fallingConfettis = fallingConfettis.filter((c) => c.id !== id);
-			}}
-		/>
+		<FallingConfetti {particleCount} onCompleted={() => handleFallingConfettiCompleted(id)} />
 	{/each}
 
 	{#each parachutes as { id, particleCount, styles, onCreate, onUpdate } (id)}
-		<FallingConfetti
-			{particleCount}
-			{styles}
-			{onCreate}
-			{onUpdate}
-			on:completed={() => {
-				parachutes = parachutes.filter((c) => c.id !== id);
-			}}
-		/>
+		<FallingConfetti {particleCount} {styles} onCompleted={() => handleParachuteCompleted(id)} {onCreate} {onUpdate} />
 	{/each}
 
 	{#each confettiBursts as { id, origin, particleCount } (id)}
-		<ConfettiBurst
-			{origin}
-			{particleCount}
-			on:completed={() => {
-				confettiBursts = confettiBursts.filter((c) => c.id !== id);
-			}}
-		/>
+		<ConfettiBurst {origin} {particleCount} onCompleted={() => handleConfettiBurstCompleted(id)} />
 	{/each}
 
 	{#each confettiCannons as { id, origin, angle, spread, force, particleCount } (id)}
 		<ConfettiCannon
-			{origin}
 			{angle}
-			{spread}
 			{force}
+			{origin}
 			{particleCount}
-			on:completed={() => {
-				confettiCannons = confettiCannons.filter((c) => c.id !== id);
-			}}
-		/>
+			{spread}
+			onCompleted={() => handleConfettiCannonCompleted(id)} />
 	{/each}
 </main>
 
@@ -188,13 +207,13 @@
 		border: none;
 		border-radius: 4px;
 		margin: 1rem;
-		box-shadow: 5px 5px 0 0 rgba(0 0 0 / 80%);
+		box-shadow: 5px 5px 0 0 rgb(0 0 0 / 80%);
 		background: linear-gradient(-45deg, hsl(260deg 95% 75%), hsl(300deg 95% 75%));
 		color: white;
 		font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
 		font-size: 1rem;
 		font-weight: bold;
-		text-shadow: -1px -1px rgba(0 0 0 / 60%);
+		text-shadow: -1px -1px rgb(0 0 0 / 60%);
 		transition:
 			transform 0.1s ease-in-out,
 			box-shadow 0.1s ease-in-out;
@@ -206,7 +225,7 @@
 	}
 
 	button:active {
-		box-shadow: 3px 3px 0 0 rgba(0 0 0 / 80%);
+		box-shadow: 3px 3px 0 0 rgb(0 0 0 / 80%);
 		transform: translate(2px, 2px);
 	}
 

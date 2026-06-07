@@ -1,0 +1,31 @@
+# Lefthook configuration file
+#
+# Refer for explanation to following link:
+# https://github.com/evilmartians/lefthook/blob/master/docs/configuration.md
+#
+
+commit-msg:
+  parallel: false # Run all hooks in serial mode
+  commands:
+    commitlint:
+      # Run commitlint with the custom configuration
+      run: npx -- commitlint --config .commitlintrc.ts --edit "$1"
+
+pre-commit:
+  parallel: false # Run all hooks in serial mode
+  commands:
+    style-pipeline:
+      priority: 1
+      # Runs FIRST (only on staged style files). Uses dedicated lint-staged config
+      # for safe handling of partially staged files.
+      run: npx lint-staged --config .stylestagedrc.json --concurrent false
+
+    universal-checks:
+      priority: 2
+      # Runs AFTER style-pipeline has completed. Uses main lint-staged config.
+      run: npx lint-staged --config .lintstagedrc.json --concurrent false
+
+    ggshield:
+      priority: 3
+      # Scan staged files for secrets using GitGuardian's ggshield
+      run: ggshield secret scan pre-commit

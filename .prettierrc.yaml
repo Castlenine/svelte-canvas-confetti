@@ -1,14 +1,30 @@
 plugins:
   - 'prettier-plugin-svelte'
 
-arrowParens: always
-bracketSpacing: true
-endOfLine: auto
-jsxSingleQuote: true
-printWidth: 160
-semi: true
-singleQuote: true
 svelteSortOrder: options-scripts-markup-styles
-tabWidth: 2
+arrowParens: always
+bracketSameLine: true
+bracketSpacing: true
+embeddedLanguageFormatting: auto
+endOfLine: lf
+htmlWhitespaceSensitivity: css
+insertPragma: false
+printWidth: 120
+proseWrap: always
+quoteProps: as-needed
+requirePragma: false
+semi: true
+singleAttributePerLine: false
+singleQuote: true
 trailingComma: all
+tabWidth: 2
 useTabs: true
+
+overrides:
+  - files:
+      - '**/package.json'
+      - '*.json'
+      - '*.jsonc'
+    options:
+      tabWidth: 2
+      useTabs: false

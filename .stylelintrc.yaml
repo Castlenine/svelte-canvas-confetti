@@ -3,23 +3,38 @@
 defaultSeverity: warning
 
 extends:
-  - stylelint-config-standard
   - stylelint-config-html
+  - stylelint-config-html/html
+  - stylelint-config-html/xml
   - stylelint-config-html/svelte
-
+  - stylelint-config-standard
+  - stylelint-config-recommended
 customSyntax: postcss-html
 
 overrides:
-  - files:
-      - '**/*.scss'
-    customSyntax: postcss-scss
+  - files: ['**/*.css']
+    rules:
+      import-notation: string
 
 ignoreFiles:
-  - node_modules/*
-  - svelte-kit/**
-  - static/**
-  - public/**
-  - dist/**
+  # ======== Node modules ========
+  - 'node_modules/'
+  # ======== Output ========
+  - '.svelte-kit/'
+  - 'dist/'
+  - 'public/'
+  # ======== Backup & local files ========
+  - '*.backup'
+  - '*.backup.*'
+  - '*.bak'
+  - '*.bak.*'
+  - '*.local'
+  - '*.local-backup'
+  - '*.local-backup.*'
+  - '*.local.*'
+  # ======== YAML ========
+  - '*.yaml'
+  - '*.yml'
 
 plugins:
   # - stylelint-at-rule-no-children
@@ -31,8 +46,6 @@ plugins:
   # - stylelint-no-browser-hacks
   - stylelint-no-unsupported-browser-features
   - stylelint-order
-  - stylelint-scss
-  - stylelint-selector-bem-pattern
 
 rules:
   # -- Plugin
@@ -41,6 +54,8 @@ rules:
     - browsers:
         - '>0.5%'
       ignore:
+        - backdrop-filter
+        - background-attachment
         - background-clip-text
         - background-img-opts
         - border-image
@@ -52,8 +67,12 @@ rules:
         - css-cascade-layers
         - css-display-contents
         - css-fixed
+        - css-focus-visible
         - css-gradients
         - css-initial-value
+        - css-letter-spacing
+        - css-masks
+        - css-media-interaction
         - css-nesting
         - css-not-sel-list
         - css-overflow
@@ -64,6 +83,7 @@ rules:
         - css-scrollbar
         - css-selection
         - css-snappoints
+        - css-touch-action
         - css-transitions
         - css-variables
         - css3-cursors
@@ -76,17 +96,19 @@ rules:
         - rem
         - svg-css
         - text-decoration
+        - text-decoration-thickness
         - text-size-adjust
         - transforms2d
         - transforms3d
         - user-select-none
+        - viewport-unit-variants
         - viewport-units
         - word-break
 
-  #-- Possible errors
+  # -- Possible errors
 
   # import
-  import-notation: string
+  # import-notation handled per-filetype in overrides
 
   # Color
   color-no-invalid-hex: true
@@ -103,10 +125,15 @@ rules:
   string-no-newline: true
 
   # Unit
-  unit-no-unknown: null # via unit-whitelist
+  unit-no-unknown: null # Covered by unit-allowed-list.
 
   # Property
   property-no-unknown: true
+  declaration-property-value-no-unknown:
+    - true
+    - ignoreProperties:
+        mask: ['/.+/']
+        /./: ['/theme\(.+\)/']
 
   # Keyframe declaration
   keyframe-declaration-no-important: true
@@ -119,7 +146,10 @@ rules:
   block-no-empty: true
 
   # Selector
-  selector-pseudo-class-no-unknown: true
+  selector-pseudo-class-no-unknown:
+    - true
+    - ignorePseudoClasses:
+        - global
   selector-pseudo-element-no-unknown: true
   selector-type-no-unknown: true
 
@@ -128,7 +158,15 @@ rules:
   media-feature-range-notation: prefix
 
   # At-rule
-  at-rule-no-unknown: null
+  at-rule-no-deprecated: true
+  at-rule-no-unknown:
+    - true
+    - ignoreAtRules:
+        - extends
+        - for
+        - forward
+        - layer
+        - use
 
   # Comment
   comment-no-empty: true
@@ -138,10 +176,9 @@ rules:
   no-duplicate-at-import-rules: true
   no-duplicate-selectors: true
   no-empty-source: true
-  no-extra-semicolons: true
   no-invalid-double-slash-comments: true # CSS-only
 
-  #-- Limit language features
+  # -- Limit language features
 
   # Color
   color-named: null # via stylelint-declaration-strict-value
@@ -160,7 +197,7 @@ rules:
   time-min-milliseconds: null
 
   # Unit
-  unit-disallowed-list: null # via unit-whitelist
+  unit-disallowed-list: null # Covered by unit-allowed-list.
   unit-allowed-list:
     - rem
     - em
@@ -168,10 +205,20 @@ rules:
     - px
     - vw
     - vh
+    - dvw
+    - dvh
+    - svw
+    - svh
+    - lvw
+    - lvh
+    - vmin
+    - vmax
     - fr
     - ms
     - s
     - deg
+    - lh
+    - ch
 
   # Shorthand property
   shorthand-property-no-redundant-values: true
@@ -181,6 +228,7 @@ rules:
 
   # Custom property
   custom-property-pattern: null
+  custom-property-no-missing-var-function: true
 
   # Property
   property-no-vendor-prefix: true
@@ -194,19 +242,18 @@ rules:
 
   # Selector
   selector-class-pattern:
-    - ^(?:(?:o|c|u|t|s|is|has|_|js|qa)-)?[a-zA-Z0-9]+(?:-[a-zA-Z0-9]+)*(?:--[a-zA-Z0-9]+(?:-[a-zA-Z0-9]+)*)?(?:\\[.+\\])?$
+    - '^([a-z][a-z0-9]*)(-[a-z0-9]+)*$'
     - resolveNestedSelectors: true
-      message: Class selector must follow the BEM pattern. Example .button. Element that depends upon the block .button-price. Modifier that changes the style of the block .button-alert
+      message: 'Class names must be in lowercase-kebab-case'
 
   selector-id-pattern:
     - /\s\S/
-    - message: Unexpected id selector
+    - message: 'Unexpected id selector'
 
   selector-max-attribute: null
   selector-max-class: null
   selector-max-combinators: null
   selector-max-compound-selectors: null
-  selector-max-empty-lines: 0
   selector-max-id: null
   selector-max-pseudo-class: null
   selector-max-specificity: null
@@ -223,28 +270,27 @@ rules:
   custom-media-pattern: null
 
   # At-rule
-  # at-rule-blacklist: null
-  #   - extend
-  #   - message: Unexpected @extend directive
-
   at-rule-no-vendor-prefix: true
   # at-rule-property-required-list: null
-  # at-rule-whitelist: null # via at-rule-blacklist
 
   # Comment
   comment-word-disallowed-list:
-    - /todo/i/idea/fixme/TODO/I/IDEA/FIXME/
+    - - '/\b(fixme|bug)\b/i'
+      - '/\b(todo|tocheck|hack)\b/i'
     - severity: warning
-      message: Don't forget this TODO
+      message: 'Avoid placeholder task comments; create a tracked task instead.'
 
   # General / Sheet
-  max-nesting-depth: 6
+  max-nesting-depth:
+    - 4
+    - ignoreAtRules:
+        - screen
+        - media
   no-unknown-animations: null # keyframes / animation in different files
 
-  #-- Stylistic issues
+  # -- Stylistic issues
 
   # Color
-  color-hex-case: lower
   color-hex-length: long
 
   # Font family
@@ -254,107 +300,27 @@ rules:
   font-weight-notation: null # via scale-unlimited/declaration-strict-value
 
   # Function
-  function-comma-newline-after: always-multi-line
-  function-comma-newline-before: never-multi-line
-  function-comma-space-after: always
-  function-comma-space-before: never
-  function-max-empty-lines: 0
   function-name-case: null
-  function-parentheses-newline-inside: always-multi-line
-  function-parentheses-space-inside: never
   function-url-quotes:
     - always
     - except: empty
 
-  function-whitespace-after: always
-
-  # Number
-  number-leading-zero: always
-  number-no-trailing-zeros: true
-
-  # String
-  string-quotes:
-    - single
-    - avoidEscape: true
-
   # Length
   length-zero-no-unit: true
-
-  # Unit
-  unit-case: lower
 
   # Value
   value-keyword-case: lower
 
-  # Value list
-  value-list-comma-newline-after: always-multi-line
-  value-list-comma-newline-before: never-multi-line
-  value-list-comma-space-after: always-single-line
-  value-list-comma-space-before: never
-  value-list-max-empty-lines: 0
-
   # Custom property
   custom-property-empty-line-before: never
 
-  # Property
-  property-case: lower
-
   # Declaration
-  declaration-bang-space-after: never
-  declaration-bang-space-before: always
-  declaration-colon-newline-after: null
-  declaration-colon-space-after: null
-  declaration-colon-space-before: null
   declaration-empty-line-before: null
 
-  # Declaration block
-  declaration-block-semicolon-newline-after: null
-  declaration-block-semicolon-newline-before: null
-  declaration-block-semicolon-space-after: null
-  declaration-block-semicolon-space-before: null
-  declaration-block-trailing-semicolon: always
-
-  # Block
-  block-closing-brace-empty-line-before: null
-  block-closing-brace-newline-after:
-    null
-    # - always
-    # - ignoreAtRules:
-    #     - if
-    #     - else
-
-  block-closing-brace-newline-before: null
-  block-closing-brace-space-after: null
-  block-closing-brace-space-before: null
-  block-opening-brace-newline-after: null
-  block-opening-brace-newline-before: null
-  block-opening-brace-space-after: null
-  block-opening-brace-space-before:
-    null
-    # - always
-    # - ignoreAtRules:
-    #     - if
-    #     - else
-
   # Selector
-  selector-attribute-brackets-space-inside: never
-  selector-attribute-operator-space-after: never
-  selector-attribute-operator-space-before: never
   selector-attribute-quotes: always
-  selector-combinator-space-after: always
-  selector-combinator-space-before: always
-  selector-descendant-combinator-no-non-space: true
-  selector-pseudo-class-case: lower
-  selector-pseudo-class-parentheses-space-inside: never
-  selector-pseudo-element-case: lower
   selector-pseudo-element-colon-notation: double
   selector-type-case: lower
-
-  # Selector list
-  selector-list-comma-newline-after: always-multi-line
-  selector-list-comma-newline-before: never-multi-line
-  selector-list-comma-space-after: always-single-line
-  selector-list-comma-space-before: never
 
   # Rule
   rule-empty-line-before:
@@ -366,27 +332,8 @@ rules:
     #     - first-nested
     #     - after-comment
 
-  # Media feature
-  media-feature-colon-space-after: always
-  media-feature-colon-space-before: never
-  media-feature-name-case: lower
-  media-feature-parentheses-space-inside: never
-  media-feature-range-operator-space-after: always
-  media-feature-range-operator-space-before: always
-
-  # Media query list
-  media-query-list-comma-newline-after: always-multi-line
-  media-query-list-comma-newline-before: never-multi-line
-  media-query-list-comma-space-after: always-single-line
-  media-query-list-comma-space-before: never
-
   # At-rule
   at-rule-empty-line-before: null
-  at-rule-name-case: lower
-  at-rule-name-newline-after: null
-  at-rule-name-space-after: always-single-line
-  at-rule-semicolon-newline-after: null
-  at-rule-semicolon-space-before: null
 
   # Comment
   comment-empty-line-before:
@@ -396,18 +343,9 @@ rules:
 
   comment-whitespace-inside: always
 
-  # General / Sheet
-  indentation: null
-  linebreaks: unix
-  max-empty-lines: null
-  max-line-length: null
-  no-eol-whitespace: true
-  no-missing-end-of-source-newline: null
-  no-empty-first-line: true
+  # -- Plugins
 
-  #-- Plugins
-
-  #-- Declaration strict value
+  # -- Declaration strict value
   # scale-unlimited/declaration-strict-value:
   #   - - z-index
   #     - /-radius/
@@ -439,114 +377,10 @@ rules:
   #       font-weight:
   #         - inherit
 
-  #-- SCSS
-
-  # @-else
-  scss/at-else-closing-brace-newline-after: always-last-in-chain
-  scss/at-else-closing-brace-space-after: null
-  scss/at-else-empty-line-before: null
-  scss/at-else-if-parentheses-space-before: always
-
-  # @-extend
-  scss/at-extend-no-missing-placeholder: null # via at-rule-blacklist
-
-  # @-function
-  scss/at-function-named-arguments: null
-  scss/at-function-parentheses-space-before: never
-  scss/at-function-pattern:
-    - (^[a-z]|[A-Z0-9])[a-z]*
-    - message: Function name must be kebab-case
-
-  # @-if
-  scss/at-if-closing-brace-newline-after: always-last-in-chain
-  scss/at-if-closing-brace-space-after: null
-
-  # @-import
-  scss/at-import-no-partial-leading-underscore: true
-  scss/at-import-partial-extension-blacklist: null # via scss/at-import-partial-extension-whitelist
-  scss/at-import-partial-extension-whitelist:
-    - scss
-    - sass
-    - css
-
-  # @-mixin
-  scss/at-mixin-argumentless-call-parentheses: always
-  scss/at-mixin-named-arguments: null
-  scss/at-mixin-parentheses-space-before: never
-  # scss/at-mixin-pattern:
-  #   - ^([a-z][a-z0-9]*)(-[a-z0-9]+)*(-styles|-image)$
-  #   - message: Mixin name must be kebab-case and suffixed with -styles | -image
-
-  # @-rule
-  scss/at-rule-no-unknown:
-    - true
-    - ignoreAtRules:
-        - extends
-        - components
-        - utilities
-        - screen
-
-  # $-variable
-  scss/dollar-variable-colon-newline-after: null
-  scss/dollar-variable-colon-space-after: at-least-one-space
-  scss/dollar-variable-colon-space-before: never
-  scss/dollar-variable-default: null
-  scss/dollar-variable-empty-line-before: null
-  scss/dollar-variable-no-missing-interpolation: true
-  scss/dollar-variable-pattern:
-    - ^(?:(?:o|c|u|t|s|is|has|_|js|qa)-)?[a-zA-Z0-9]+(?:-[a-zA-Z0-9]+)*(?:--[a-zA-Z0-9]+(?:-[a-zA-Z0-9]+)*)?(?:\\[.+\\])?$
-    - message: Variable name must follow the BEM pattern. Example $color-brand. Variety of the main/primary variable $color-brand-primary && $color-brand-secondary
-
-  # %-placeholder
-  scss/percent-placeholder-pattern: null # via at-rule-blacklist
-
-  # //-comment
-  scss/double-slash-comment-empty-line-before: null
-  scss/double-slash-comment-inline: null
-  scss/double-slash-comment-whitespace-inside: null
-
-  # Declaration
-  scss/declaration-nested-properties: never
-  scss/declaration-nested-properties-no-divided-groups: null # via scss/declaration-nested-properties
-
-  # Media feature
-  scss/media-feature-value-dollar-variable: null
-
-  # Operator
-  scss/operator-no-newline-after: true
-  scss/operator-no-newline-before: true
-  scss/operator-no-unspaced: true
-
-  # Partial
-  scss/partial-no-import: null
-
-  # Selector
-  scss/selector-nest-combinators: null
-  scss/selector-no-redundant-nesting-selector: null
-
-  # General / Sheet
-  scss/no-dollar-variables: null
-  scss/no-duplicate-dollar-variables:
-    - true
-    - ignoreInside: at-rule
-
-  #-- Order
+  # -- Order
   order/order:
-    - # $variables
-      - dollar-variables
-
-      # @include
-      - type: at-rule
-        name: include
-        hasBlock: false
-
-      # @include {}
-      - type: at-rule
-        name: include
-        hasBlock: true
-
-      # properties
-      - declarations
+    # properties
+    - - declarations
 
       # Nested
       - rules
@@ -562,8 +396,6 @@ rules:
       # &:pseudo-classes
       - type: rule
         selector: ^&:[\w-]+,?
-      - type: rule
-        selector: ^#{\$hover-selector}$
 
       # Parent selection &
       - type: rule
@@ -609,6 +441,29 @@ rules:
           - opacity
           - vertical-align
           - resize
+
+      - groupName: 'Gap'
+        properties:
+          - gap
+          - row-gap
+
+      - groupName: 'Grid'
+        properties:
+          - grid
+          - grid-area
+          - grid-auto-flow
+          - grid-auto-rows
+          - grid-auto-columns
+          - grid-template
+          - grid-template-areas
+          - grid-template-rows
+          - grid-template-columns
+          - grid-row
+          - grid-row-start
+          - grid-row-end
+          - grid-column
+          - grid-column-start
+          - grid-column-end
 
       - groupName: 'Flex'
         properties:
@@ -773,6 +628,26 @@ rules:
           - column-span
           - column-count
           - column-width
+
+      - groupName: 'Mask'
+        properties:
+          - mask
+          - mask-border
+          - mask-border-mode
+          - mask-border-outset
+          - mask-border-repeat
+          - mask-border-slice
+          - mask-border-source
+          - mask-border-width
+          - mask-clip
+          - mask-composite
+          - mask-image
+          - mask-mode
+          - mask-origin
+          - mask-position
+          - mask-repeat
+          - mask-size
+          - mask-type
 
       - groupName: 'Alteration'
         properties:

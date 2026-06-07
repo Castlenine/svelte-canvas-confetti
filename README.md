@@ -13,13 +13,7 @@ Canvas-based confetti for Svelte 🎉, with no dependencies.
 * Supports image-based confetti.
 * Allows full customization of confetti behavior using the `onCreate` and `onUpdate` hooks.
 
-## Examples
-
-[Simple Demo](https://svelte.dev/repl/84bb431468264dabbfdd0750ef949f9f?version=3.50.1)
-
-[Firework Demo](https://svelte.dev/repl/8d05b7c60c244fe0b7e09b027dd3bc5d?version=3.50.1)
-
-[Advanced Demo](https://svelte.dev/repl/5cefe21763c445d986c6e23ddea1327a?version=3.50.1)
+## 🚀 [Demo](https://svelte-canvas-confetti.vercel.app/)
 
 ## Installation
 
@@ -83,6 +77,43 @@ If no properties are passed in, it will behave the same as **FallingConfetti**.
 <Confetti />
 ```
 
+## Image Handling
+
+You can use images instead of colors by passing `HTMLImageElement` instances to the `styles` prop. It is recommended to use [Vite's built-in image handling](https://svelte.dev/docs/kit/images#Vite's-built-in-handling) to import images from `$lib/assets` — this ensures proper asset hashing, inlining of small files, and tree-shaking.
+
+```svelte
+<script lang="ts">
+  import { onMount } from 'svelte';
+
+  import { FallingConfetti } from '@castlenine/svelte-canvas-confetti';
+
+  import SmallLogo from '$lib/assets/logos/logo-small.png';
+
+  let imageLogo = $state<HTMLImageElement | null>(null);
+  let showConfetti = $state(false);
+
+  onMount(() => {
+    imageLogo = new Image();
+    imageLogo.src = SmallLogo;
+
+    imageLogo.onload = () => {
+      showConfetti = true;
+    };
+  });
+</script>
+
+{#if showConfetti && imageLogo}
+  <FallingConfetti
+    particleCount={142}
+    styles={[imageLogo]}
+    onCompleted={() => {
+      showConfetti = false;
+    }} />
+{/if}
+```
+
+The image import path can be placed wherever appropriate in your project, using any alias you prefer (e.g., `$lib/assets/images/`, `$lib/assets/logos/`, `$assets/images/`).
+
 ## Props
 
 ### particleCount
@@ -101,7 +132,7 @@ The number of particles to create.
 
 A list of styles used to render particles. Can be any valid HTML color or an `HTMLImageElement`.
 
-**Type:** `ParticleStyle[]`
+**Type:** `readonly ParticleStyle[]`
 **Default value:** `['hotpink', 'gold', 'dodgerblue', 'tomato', 'rebeccapurple', 'lightgreen', 'turquoise']`
 **Example:**
 
@@ -157,7 +188,7 @@ The spread used when creating each particle’s initial direction. The particle'
 <Confetti origin={[100, 100]} spread={45} />
 ```
 
-## onCreate
+### onCreate
 
 This can be used to override the properties of each particle at creation time.
 
@@ -175,7 +206,7 @@ This can be used to override the properties of each particle at creation time.
 />
 ```
 
-## onUpdate
+### onUpdate
 
 This can be used to override the properties of each particle at update time.
 
@@ -191,7 +222,27 @@ This can be used to override the properties of each particle at update time.
 />
 ```
 
-## Particle object
+### onCompleted
+
+A callback fired when all particles have exited the screen.
+
+**Type:** `() => void`
+**Default value:** `undefined`
+**Example:**
+
+```svelte
+<script>
+  import { Confetti } from '@castlenine/svelte-canvas-confetti';
+
+  let showConfetti = $state(true);
+</script>
+
+{#if showConfetti}
+  <Confetti onCompleted={() => { showConfetti = false; }} />
+{/if}
+```
+
+## Particle Object
 
 ```typescript
 export type Particle = {
