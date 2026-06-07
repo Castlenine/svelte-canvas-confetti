@@ -14,7 +14,7 @@
 		random,
 	} from '$lib';
 
-	import ParachuteImage from '$lib/assets/images/parachute.png';
+	import ParachuteImage from './assets/images/parachute.png';
 
 	let particleCount = $state(Math.floor(random(100, 1)));
 	let fallingConfettis: { id: number; particleCount: number }[] = $state([]);
