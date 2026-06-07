@@ -10,3 +10,7 @@ vite.config.ts.timestamp-*
 # Ignore backup & local files
 *.backup.*
 *.local.*
+
+# Environment variables
+.env
+.env.*
