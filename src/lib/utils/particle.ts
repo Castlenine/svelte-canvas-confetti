@@ -1,29 +1,27 @@
-import type { OnCreateParticle, Particle, Position } from './types';
+import type { OnCreateParticle, Particle, ParticleStyle, Position } from './types';
 
-import { BOUNDARY, DEG_TO_RAD, MOVEMENT_SPEED, ROTATION_SPEED } from './constants';
+import { BOUNDARY, DEG_TO_RAD, ROTATION_SPEED } from './constants';
 import { random } from './random';
 
-export const createParticle = (
+const createParticle = (
 	context: CanvasRenderingContext2D,
 	origin: Position | undefined,
 	force: number,
 	angle: number,
 	spread: number,
-	styles: (HTMLImageElement | string)[],
+	styles: ParticleStyle[],
 	onCreate?: OnCreateParticle,
 ) => {
-	let dir;
-	let x;
-	let y;
-	let vx;
-	let vy;
-	let dx;
-	let dy;
-	const style = styles[Math.floor(random(styles.length))];
+	let dir: number;
+	let x: number;
+	let y: number;
+	let vx: number;
+	let vy: number;
+	const STYLE = styles[Math.floor(random(styles.length))];
 	let da = random(90, -90);
 
 	if (origin) {
-		// When we have an origin, we create a confetti burst
+		// Generate a confetti burst effect using the provided origin coordinates
 		x = origin[0];
 		y = origin[1];
 		vx = random(force, 5);
@@ -31,7 +29,7 @@ export const createParticle = (
 		dir = random(angle + spread / 2, angle - spread / 2) * DEG_TO_RAD;
 		da *= 2;
 	} else {
-		// Otherwise we drop confetti from the top of the screen
+		// If no origin is provided, confetti falls from the top edge of the canvas
 		x = random(context.canvas.width);
 		y = random(-BOUNDARY);
 		vx = random(5);
@@ -39,10 +37,8 @@ export const createParticle = (
 		dir = random(180) * DEG_TO_RAD;
 	}
 
-	// eslint-disable-next-line prefer-const
-	dx = Math.cos(dir);
-	// eslint-disable-next-line prefer-const
-	dy = Math.sin(dir);
+	const DX = Math.cos(dir);
+	const DY = Math.sin(dir);
 
 	let particle: Particle = {
 		dead: false,
@@ -52,46 +48,49 @@ export const createParticle = (
 		y,
 		angle: random(360),
 		da,
-		dx: dx * vx,
-		dy: dy * vy,
+		dx: DX * vx,
+		dy: DY * vy,
 		w: random(18, 10),
 		h: random(6, 4),
 		gy: random(4.5, 2),
 		xw: random(6, 1),
-		style,
+		style: STYLE,
 	};
 
 	if (onCreate) particle = onCreate(particle);
 	return particle;
 };
 
-export const renderParticle = (context: CanvasRenderingContext2D, p: Particle) => {
-	if (p.dead || p.life < p.delay) return;
-	context.save();
-	context.translate(p.x, p.y);
-	context.rotate(p.angle * DEG_TO_RAD);
+const renderParticle = (context: CanvasRenderingContext2D, p: Particle) => {
+	const ANGLE_IN_RADIANS = p.angle * DEG_TO_RAD;
+	const COS = Math.cos(ANGLE_IN_RADIANS);
+	const SIN = Math.sin(ANGLE_IN_RADIANS);
+	context.setTransform(COS, SIN, -SIN, COS, p.x, p.y);
 	if (p.style instanceof HTMLImageElement) {
 		context.drawImage(p.style, -p.style.width / 2, -p.style.height / 2);
 	} else {
 		context.fillStyle = p.style;
-		context.beginPath();
-		context.rect(p.w * -0.5, p.h * -0.5, p.w, p.h);
-		context.fill();
+		context.fillRect(p.w * -0.5, p.h * -0.5, p.w, p.h);
 	}
-	context.restore();
+	context.setTransform(1, 0, 0, 1, 0, 0);
 };
 
-export const updateParticle = (p: Particle, dt: number) => {
+const updateParticle = (p: Particle, dt: number) => {
 	p.life += dt;
 	if (p.dead || p.life < p.delay) return;
+	const FRAME_SCALE = dt * 60;
 	p.angle += p.da * dt * ROTATION_SPEED;
 	p.dy += p.gy * dt * ROTATION_SPEED;
-	p.dx += random(4, 2) * Math.sin(p.life * p.xw) * dt;
-	p.dx *= 0.98;
-	p.dy *= 0.98;
-	p.x += p.dx * MOVEMENT_SPEED;
-	p.y += p.dy * MOVEMENT_SPEED;
+	p.dx += (3 * Math.sin(p.life * p.xw) + Math.sin(p.life * p.xw * 2.3)) * dt;
+	const DRAG = 0.98 ** FRAME_SCALE;
+	p.dx *= DRAG;
+	p.dy *= DRAG;
+	p.x += p.dx * FRAME_SCALE;
+	p.y += p.dy * FRAME_SCALE;
 };
 
-export const isOutOfBounds = (context: CanvasRenderingContext2D, p: Particle) =>
-	p.x < -BOUNDARY || p.x > context.canvas.width + BOUNDARY || p.y > context.canvas.height + BOUNDARY;
+const isOutOfBounds = (p: Particle, canvasWidth: number, canvasHeight: number) => {
+	return p.x < -BOUNDARY || p.x > canvasWidth + BOUNDARY || p.y > canvasHeight + BOUNDARY;
+};
+
+export { createParticle, renderParticle, updateParticle, isOutOfBounds };

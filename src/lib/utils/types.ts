@@ -1,8 +1,8 @@
-export type ParticleStyle = string | HTMLImageElement;
+type ParticleStyle = string | HTMLImageElement;
 
-export type Position = [number, number];
+type Position = [number, number];
 
-export type Particle = {
+type Particle = {
 	dead: boolean;
 	life: number;
 	delay: number;
@@ -19,6 +19,8 @@ export type Particle = {
 	style: ParticleStyle;
 };
 
-export type OnCreateParticle = (p: Particle) => Particle;
+type OnCreateParticle = (p: Particle) => Particle;
 
-export type OnUpdateParticle = (p: Particle, dt: number) => void;
+type OnUpdateParticle = (p: Particle, dt: number) => void;
+
+export type { ParticleStyle, Position, Particle, OnCreateParticle, OnUpdateParticle };

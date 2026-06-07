@@ -77,7 +77,7 @@
 		origin: Position;
 	}[] = [];
 	const triggerConfettiCannon = () => {
-		const left = coinFlip();
+		const LEFT = coinFlip();
 
 		confettiCannons = [
 			...confettiCannons,
@@ -85,9 +85,9 @@
 				id: counter++,
 				particleCount,
 				spread: random(90, 25),
-				angle: random(65, 25) + (left ? 270 : 180),
+				angle: random(65, 25) + (LEFT ? 270 : 180),
 				force: random(55, 25),
-				origin: [left ? 0 : window.innerWidth, window.innerHeight],
+				origin: [LEFT ? 0 : window.innerWidth, window.innerHeight],
 			},
 		];
 	};

@@ -4,7 +4,7 @@ import adapter from '@sveltejs/adapter-static';
 import sveltePreprocess from 'svelte-preprocess';
 
 /** @type {import('@sveltejs/kit').Config} */
-const config = {
+const CONFIG = {
 	// Consult https://kit.svelte.dev/docs/integrations#preprocessors
 	// for more information about preprocessors
 	preprocess: [
@@ -24,4 +24,4 @@ const config = {
 	},
 };
 
-export default config;
+export default CONFIG;

@@ -2,21 +2,21 @@
 	"extends": "./.svelte-kit/tsconfig.json",
 	"compilerOptions": {
 		"strict": true,
-		"moduleResolution": "bundler",
+		"moduleResolution": "node",
 		"module": "ESNext",
 		"lib": [
 			"DOM",
 			"DOM.Iterable",
 			"ESNext"
 		],
-		"target": "ES6", // Given that modern web browsers provide comprehensive support for all ES6 features, opting for ES6 is a prudent decision
+		"target": "ES6", // Modern browsers fully support ES6
 		"allowJs": true, // Allow JavaScript files to be compiled
 		"checkJs": true, // Check JavaScript files
 		"declaration": true, // Generates corresponding .d.ts files
 		"declarationMap": true, // Generates a source map for each corresponding declaration file
-		"esModuleInterop": true, // Helps mend a few of the fences between CommonJS and ES Modules.
+		"esModuleInterop": true, // Enables interoperability between CommonJS and ES Modules
 		"forceConsistentCasingInFileNames": true, // Ensures that the casing of file names is consistent
-		"isolatedModules": true, // Prevents a few TS features which are unsafe when treating modules as isolated files.
+		"isolatedModules": true, // Prevents TS features that are unsafe when treating modules as isolated files
 		"moduleDetection": "force", // Forces TypeScript to consider all files as modules. This helps to avoid 'cannot redeclare block-scoped variable' errors.
 		"noEmit": true, // Tells TypeScript not to emit any files. This is important when you're using a bundler so you don't emit useless .js files
 		"noImplicitAny": true, // Raise error on expressions and declarations with an implied 'any' type
@@ -28,21 +28,23 @@
 		"sourceMap": true, // To have warnings/errors of the Svelte compiler at the correct position, enable source maps by default
 		"strictFunctionTypes": true, // Enable strict checking of function types
 		"strictNullChecks": true, // Enable strict null checks
-		"strictPropertyInitialization": true, // Enable strict checking of property initialization in classes
+		"strictPropertyInitialization": true // Enable strict checking of property initialization in classes
 	},
 	"include": [
+		".svelte-kit/ambient.d.ts",
+		".svelte-kit/types/**/$types.d.ts",
 		"src/**/*.d.ts",
 		"src/**/*.ts",
 		"src/**/*.js",
-		"src/**/*.svelte",
+		"src/**/*.svelte"
 	],
 	"exclude": [
-		"*.backup",
-		"*.cjs",
-		"dist",
 		"node_modules",
+		"dist",
 		"public",
 		"static",
 		"svelte-kit",
+		"*.backup",
+		"*.cjs"
 	]
 }

@@ -1,9 +1,6 @@
-export const DEG_TO_RAD = Math.PI / 180;
+const DEG_TO_RAD = Math.PI / 180;
+const ROTATION_SPEED = 2;
+const BOUNDARY = 20;
+const COLORS = ['hotpink', 'gold', 'dodgerblue', 'tomato', 'rebeccapurple', 'lightgreen', 'turquoise'];
 
-export const ROTATION_SPEED = 2;
-
-export const MOVEMENT_SPEED = 1;
-
-export const BOUNDARY = 20;
-
-export const COLORS = ['hotpink', 'gold', 'dodgerblue', 'tomato', 'rebeccapurple', 'lightgreen', 'turquoise'];
+export { DEG_TO_RAD, ROTATION_SPEED, BOUNDARY, COLORS };

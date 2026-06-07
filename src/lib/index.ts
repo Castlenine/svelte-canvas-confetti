@@ -1,4 +1,4 @@
-export type { Particle, OnCreateParticle, OnUpdateParticle } from './utils/types';
+export type { Particle, ParticleStyle, Position, OnCreateParticle, OnUpdateParticle } from './utils/types';
 
 export { default as FallingConfetti } from './FallingConfetti.svelte';
 export { default as ConfettiBurst } from './ConfettiBurst.svelte';
