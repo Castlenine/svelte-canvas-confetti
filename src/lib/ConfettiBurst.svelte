@@ -1,66 +1,37 @@
+<!--
+@component
+Confetti burst effect. Spawns particles from a single origin point that explode outward in all directions (360° spread).
+
+&nbsp;
+
+@prop origin {Position} - Origin position [x, y] of the confetti burst. Required.
+@prop styles {readonly ParticleStyle[]} [undefined] - Render styles for confetti. Valid HTML colors or HTMLImageElement.
+@prop particleCount {number} [50] - Number of particles to create.
+@prop onCreate {OnCreateParticle} [undefined] - Callback to override initial particle values at creation time.
+@prop onUpdate {OnUpdateParticle} [undefined] - Callback called each frame per particle for custom animation logic.
+@prop onCompleted {() => void} [undefined] - Callback fired when all particles have exited the screen.
+-->
+
 <script lang="ts">
 	import type { OnCreateParticle, OnUpdateParticle, ParticleStyle, Position } from './utils/types';
 
 	import Confetti from './Confetti.svelte';
 
-	/**
-	 * The origin position of the confetti burst.
-	 * @required
-	 * @example
-	 * ```
-	 * <ConfettiBurst origin={[50, 50]} />
-	 * ```
-	 */
-	export let origin: Position;
-	/**
-	 * A list of render styles to use for the confetti. Each confetti will be assigned a random value from the list.
-	 * The values can either be valid HTML colors or an HTMLImageElement.
-	 * @default ['hotpink','gold','dodgerblue','tomato','rebeccapurple','lightgreen','turquoise']
-	 * @example
-	 * ```
-	 * <ConfettiBurst colors={['red', '#ff0000', 'hsl(250, 54%, 85%)']} />
-	 * ```
-	 */
-	export let styles: ParticleStyle[] | undefined = undefined;
-	/**
-	 * The number of particles to create.
-	 * @default 50
-	 * @example
-	 * ```
-	 * <ConfettiBurst particleCount={100} />
-	 * ```
-	 */
-	export let particleCount = 50;
-	/**
-	 * By default, each particle is created with some random variation. The initial values of each particle can be overridden using the onCreate callback.
-	 * @default undefined
-	 * @example
-	 * ```
-	 * <ConfettiBurst
-	 *   onCreate={(particle) => {
-	 *     particle.style = 'blue';
-	 *     particle.x = window.innerWidth / 2;
-	 *     return particle;
-	 * 	 }}
-	 * />
-	 * ```
-	 */
-	export let onCreate: OnCreateParticle | undefined = undefined;
-	/**
-	 * The onUpdate callback can be used to modify the particle on each frame.
-	 * @default undefined
-	 * @example
-	 * ```
-	 * <ConfettiBurst
-	 *   onUpdate={(particle, deltaTime) => {
-	 *     if (particle.angle < 0 && particle.da < 0) {
-	 *       particle.da *= -1;
-	 * 		 }
-	 * 	 }}
-	 * />
-	 * ```
-	 */
-	export let onUpdate: OnUpdateParticle | undefined = undefined;
+	const {
+		origin,
+		styles = undefined,
+		particleCount = 50,
+		onCreate = undefined,
+		onUpdate = undefined,
+		onCompleted,
+	} = $props<{
+		origin: Position;
+		styles?: readonly ParticleStyle[];
+		particleCount?: number;
+		onCreate?: OnCreateParticle;
+		onUpdate?: OnUpdateParticle;
+		onCompleted?: () => void;
+	}>();
 </script>
 
-<Confetti {particleCount} {origin} {styles} {onCreate} {onUpdate} on:completed />
+<Confetti {origin} {particleCount} {styles} {onCompleted} {onCreate} {onUpdate} />
