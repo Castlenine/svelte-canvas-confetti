@@ -42,10 +42,10 @@ Whether you are reporting a bug, suggesting a feature, or submitting a pull requ
    | Base branch | Use for |
    | --- | --- |
    | `main` | Current version (Svelte 5) |
-   | `main/v1` | Legacy support (Svelte 3/4) |
+   | `v1/main` | Legacy support (Svelte 3/4) |
 
    ```shell
-   git checkout development
+   git checkout main
    git checkout -b feat/my-new-feature
    # or
    git checkout -b fix/issue-description
@@ -110,7 +110,7 @@ Optionally, you can use `pnpm commit` to launch the interactive Commitizen promp
   | Branch | Use for |
   | --- | --- |
   | `development` | Current version (Svelte 5) |
-  | `development/v1` | Legacy support (Svelte 3/4) |
+  | `v1/development` | Legacy support (Svelte 3/4) |
 
 - Use a descriptive title following the commit convention format (e.g., `feat: add sparkle particle shape`).
 - Include a clear description of what changed and why.
