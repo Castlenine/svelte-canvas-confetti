@@ -16,6 +16,10 @@ interface CreateParticleOptions {
 function createParticle(options: CreateParticleOptions): Particle {
 	const { context, origin, force, angle, spread, styles, onCreate } = options;
 
+	if (styles.length === 0) {
+		throw new Error('styles array must contain at least one ParticleStyle');
+	}
+
 	let dir: number;
 	let positionX: number;
 	let positionY: number;
@@ -74,9 +78,11 @@ function renderParticle(context: CanvasRenderingContext2D, particle: Particle): 
 
 	if (particle.style instanceof HTMLImageElement) {
 		context.drawImage(particle.style, -particle.style.width / 2, -particle.style.height / 2);
-	} else {
+	} else if (typeof particle.style === 'string') {
 		context.fillStyle = particle.style;
 		context.fillRect(particle.w * -0.5, particle.h * -0.5, particle.w, particle.h);
+	} else {
+		throw new Error(`Unhandled ParticleStyle type: "${String(particle.style)}"`);
 	}
 
 	context.setTransform(1, 0, 0, 1, 0, 0);

@@ -1,20 +1,12 @@
 <script lang="ts">
+	import type { OnCreateParticle, OnUpdateParticle, Particle } from '$lib';
 	import type { ParticleStyle, Position } from '$lib/utils/types';
 
 	import { onMount } from 'svelte';
 
-	import {
-		ConfettiBurst,
-		ConfettiCannon,
-		FallingConfetti,
-		type OnCreateParticle,
-		type OnUpdateParticle,
-		type Particle,
-		coinFlip,
-		random,
-	} from '$lib';
+	import { coinFlip, ConfettiBurst, ConfettiCannon, FallingConfetti, random } from '$lib';
 
-	import ParachuteImage from './assets/images/parachute.png';
+	import ParachuteAssetImage from './assets/images/parachute.png';
 
 	let particleCount = $state(Math.floor(random(100, 1)));
 	let fallingConfettis: { id: number; particleCount: number }[] = $state([]);
@@ -35,8 +27,9 @@
 		origin: Position;
 	}[] = $state([]);
 
-	let counter = 0;
 	let parachuteImg: HTMLImageElement | null = $state(null);
+
+	let counter = 0;
 
 	function triggerFallingConfetti(): void {
 		fallingConfettis = [
@@ -57,13 +50,12 @@
 				id: counter++,
 				styles: [parachuteImg],
 				particleCount,
-				onCreate: (p: Particle) => {
-					p.angle = 0;
-					p.gy = 2;
-					p.da = random(35, -35);
-
-					return p;
-				},
+				onCreate: (p: Particle) => ({
+					...p,
+					angle: 0,
+					gy: 2,
+					da: random(35, -35),
+				}),
 				onUpdate: (p: Particle) => {
 					if ((p.angle > 35 && p.da > 0) || (p.angle < -35 && p.da < 0)) {
 						p.da *= -1;
@@ -121,11 +113,16 @@
 
 	onMount(() => {
 		const IMAGE = new Image();
-		IMAGE.src = ParachuteImage;
+		IMAGE.src = ParachuteAssetImage;
 
-		IMAGE.onload = () => {
-			parachuteImg = IMAGE;
-		};
+		IMAGE.decode()
+			.then(() => {
+				parachuteImg = IMAGE;
+			})
+
+			.catch(() => {
+				console.warn('Warn::demo::onMount', 'Failed to load parachute image', { src: ParachuteAssetImage });
+			});
 	});
 </script>
 

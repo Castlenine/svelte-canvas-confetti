@@ -75,9 +75,16 @@ Full-screen canvas-based confetti renderer. Spawns particles on mount and animat
 
 	function start(options: StartOptions): () => void {
 		const { canvas, onCompleted, particleCount, origin, force, angle, spread, styles, onCreate, onUpdate } = options;
+
+		if (particleCount <= 0) {
+			throw new Error('particleCount must be a positive integer');
+		}
+
 		const MAYBE_CONTEXT = canvas.getContext('2d');
 
-		if (!MAYBE_CONTEXT) throw new Error('No context?');
+		if (!MAYBE_CONTEXT) {
+			throw new Error('Failed to get canvas 2D context');
+		}
 
 		const CONTEXT: CanvasRenderingContext2D = MAYBE_CONTEXT;
 
