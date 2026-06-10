@@ -93,12 +93,18 @@ You can use images instead of colors by passing `HTMLImageElement` instances to 
   let showConfetti = $state(false);
 
   onMount(() => {
-    imageLogo = new Image();
-    imageLogo.src = SmallLogo;
+    const IMAGE = new Image();
+    IMAGE.src = SmallLogo;
 
-    imageLogo.onload = () => {
-      showConfetti = true;
-    };
+    IMAGE.decode()
+      .then(() => {
+        imageLogo = IMAGE;
+        showConfetti = true;
+      })
+
+      .catch(() => {
+        console.warn('Failed to load confetti image');
+      });
   });
 </script>
 
