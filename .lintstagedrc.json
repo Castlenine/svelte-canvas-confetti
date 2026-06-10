@@ -1,5 +1,5 @@
 {
-  "*.{ts,js,mjs,svelte}": ["npm run lint:staged:fix --", "npm run format:staged --"],
-  "*.{json,jsonc}": ["npm run format:staged --"],
-  "*.{css,html,md,mdc,mdx,yaml,yml,cjs}": ["npm run format:staged --"]
+  "*.{ts,js,mjs,svelte}": ["pnpm lint:staged:fix --", "pnpm format:staged --"],
+  "*.{json,jsonc}": ["pnpm format:staged --"],
+  "*.{css,html,md,mdc,mdx,yaml,yml,cjs}": ["pnpm format:staged --"]
 }

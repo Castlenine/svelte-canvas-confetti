@@ -1,3 +1,3 @@
 {
-  "*.{css,svelte}": ["npm run stylelint:staged:fix --", "npm run format:staged --"]
+  "*.{css,svelte}": ["pnpm stylelint:staged:fix --", "pnpm format:staged --"]
 }
