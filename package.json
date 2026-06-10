@@ -59,7 +59,7 @@
     "stylelint:staged:fix": "stylelint --config .stylelintrc.yaml --fix=strict",
     "clean-code": "pnpm stylelint:fix && pnpm lint:fix && pnpm format",
     "remove-dist-folder": "rimraf dist",
-    "publish-package": "npm publish --access public",
+    "publish-package": "pnpm publish --access public",
     "commit": "git status && git-cz",
     "prepare": "svelte-kit sync && lefthook install"
   },
