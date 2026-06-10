@@ -1,10 +1,10 @@
 import { defineConfig } from 'eslint/config';
 import globals from 'globals';
 import js from '@eslint/js';
+import perfectionist from 'eslint-plugin-perfectionist';
 import prettier from 'eslint-config-prettier/flat';
 // @ts-expect-error -- eslint-plugin-security has no type declarations
 import security from 'eslint-plugin-security';
-import simpleImportSort from 'eslint-plugin-simple-import-sort';
 import sonarjs from 'eslint-plugin-sonarjs';
 import svelte from 'eslint-plugin-svelte';
 import tseslint from 'typescript-eslint';
@@ -73,19 +73,43 @@ const CONFIGURATION = defineConfig(
 		},
 	},
 
-	// ─── Import Ordering ──────────────────────────────────────────────────────────
+	// ─── Import & Export Ordering ────────────────────────────────────────────────
 	// No ESLint plugin supports auto-fixing declaration order by variable name — all sort by module path
+	// Member and export sorting: perfectionist with types-first via groups + customGroups
 	{
-		plugins: { 'simple-import-sort': simpleImportSort },
+		plugins: { perfectionist },
 		rules: {
-			'simple-import-sort/exports': 'warn',
-			'sort-imports': [
+			'perfectionist/sort-named-imports': [
 				'warn',
 				{
-					ignoreCase: false,
-					ignoreDeclarationSort: true,
-					ignoreMemberSort: false,
-					allowSeparatedGroups: true,
+					type: 'natural',
+					groups: ['type', 'value'],
+					customGroups: [
+						{ groupName: 'type', modifiers: ['type'], selector: 'import' },
+						{ groupName: 'value', modifiers: ['value'], selector: 'import' },
+					],
+				},
+			],
+			'perfectionist/sort-named-exports': [
+				'warn',
+				{
+					type: 'natural',
+					groups: ['type', 'value'],
+					customGroups: [
+						{ groupName: 'type', modifiers: ['type'], selector: 'export' },
+						{ groupName: 'value', modifiers: ['value'], selector: 'export' },
+					],
+				},
+			],
+			'perfectionist/sort-exports': [
+				'warn',
+				{
+					type: 'natural',
+					groups: ['type', 'value'],
+					customGroups: [
+						{ groupName: 'type', modifiers: ['type'], selector: 'export' },
+						{ groupName: 'value', modifiers: ['value'], selector: 'export' },
+					],
 				},
 			],
 		},
