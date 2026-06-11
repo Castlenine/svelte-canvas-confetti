@@ -5,7 +5,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [1.2.0] - 2026-06-11
+## [1.2.0] - 2026-06-12
 
 ### Breaking Changes
 
@@ -33,6 +33,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- `.npmrc` with `publish-branch` set to `v1/main` for legacy version publishing
 - Runtime validation error when `styles` array is empty
 - HTML comment-based `@component` documentation blocks on all Svelte components
 - `lefthook.yaml` for Git hooks automation
