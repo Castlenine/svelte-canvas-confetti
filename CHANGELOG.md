@@ -33,7 +33,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- `.npmrc` with `publish-branch` set to `v1/main` for legacy version publishing
+- `publishBranch` set to `v1/main` in `pnpm-workspace.yaml` for legacy version publishing
 - Runtime validation error when `styles` array is empty
 - HTML comment-based `@component` documentation blocks on all Svelte components
 - `lefthook.yaml` for Git hooks automation
