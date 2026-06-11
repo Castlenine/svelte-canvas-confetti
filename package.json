@@ -1,6 +1,6 @@
 {
   "name": "@castlenine/svelte-canvas-confetti",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "description": "Canvas-based confetti for Svelte, with no dependencies",
   "license": "MIT",
   "keywords": [
@@ -40,9 +40,6 @@
   "files": [
     "dist"
   ],
-  "publishConfig": {
-    "tag": "legacy"
-  },
   "scripts": {
     "preinstall": "npx only-allow pnpm",
     "dev": "vite dev",
@@ -63,7 +60,7 @@
     "stylelint:staged:fix": "stylelint --config .stylelintrc.yaml --fix=strict",
     "clean-code": "pnpm stylelint:fix && pnpm lint:fix && pnpm format",
     "remove-dist-folder": "rimraf dist",
-    "publish-package": "pnpm publish --access public",
+    "publish-package": "pnpm publish --access public --tag legacy",
     "commit": "git status && git-cz",
     "prepare": "svelte-kit sync && lefthook install"
   },
