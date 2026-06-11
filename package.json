@@ -1,6 +1,6 @@
 {
   "name": "@castlenine/svelte-canvas-confetti",
-  "version": "1.1.1",
+  "version": "1.2.0",
   "description": "Canvas-based confetti for Svelte, with no dependencies",
   "license": "MIT",
   "keywords": [
