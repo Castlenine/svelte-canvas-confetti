@@ -56,6 +56,9 @@ project_id
 # Static assets
 /static/
 
+# License file
+LICENSE
+
 # TypeScript config (JSON, not a target for Prettier TS formatting)
 tsconfig.json
 
