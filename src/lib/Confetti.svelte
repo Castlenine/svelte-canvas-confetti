@@ -1,189 +1,161 @@
+<!--
+@component
+Full-screen canvas-based confetti renderer. Spawns particles on mount and animates them via `requestAnimationFrame` until all exit the viewport, then fires `on:completed`. Used internally by `ConfettiBurst`, `ConfettiCannon`, and `FallingConfetti`.
+
+&nbsp;
+
+@prop styles {readonly ParticleStyle[]} [COLORS] - Render styles for confetti. Each particle gets a random value. Valid HTML colors or HTMLImageElement.
+@prop particleCount {number} [50] - Number of particles to create.
+@prop origin {Position} [undefined] - Origin position [x, y]. If omitted, confetti falls from the top.
+@prop force {number} [15] - Burst velocity. Higher = faster/further. No effect without origin.
+@prop angle {number} [0] - Burst direction in degrees. Use with spread for directed bursts. No effect without origin.
+@prop spread {number} [360] - Angular spread in degrees. Use with angle for directed bursts. No effect without origin.
+@prop onCreate {OnCreateParticle} [undefined] - Callback to override initial particle values at creation time.
+@prop onUpdate {OnUpdateParticle} [undefined] - Callback called each frame per particle for custom animation logic.
+@callback on:completed {() => void} - Dispatched when all particles have exited the screen.
+-->
+
 <script lang="ts" context="module">
 	import type { OnCreateParticle, OnUpdateParticle, Particle, ParticleStyle, Position } from './utils/types';
 
 	import { COLORS } from './utils/constants';
 	import { createParticle, isOutOfBounds, renderParticle, updateParticle } from './utils/particle';
 
-	const renderParticles = (context: CanvasRenderingContext2D, particles: Particle[]) => {
+	function renderParticles(context: CanvasRenderingContext2D, particles: Particle[]): void {
 		context.clearRect(0, 0, context.canvas.width, context.canvas.height);
 
-		// eslint-disable-next-line no-loops/no-loops
-		for (let i = 0; i < particles.length; ++i) {
-			// eslint-disable-next-line security/detect-object-injection
-			const P = particles[i];
-			if (!P.dead && P.life >= P.delay) renderParticle(context, P);
+		for (let index = 0; index < particles.length; ++index) {
+			const PARTICLE = particles[index];
+
+			if (!PARTICLE.dead && PARTICLE.life >= PARTICLE.delay) renderParticle(context, PARTICLE);
 		}
-	};
+	}
 
 	/**
 	 * @returns {boolean} Returns false if no more confettis on the screen.
 	 */
-	const updateParticles = (context: CanvasRenderingContext2D, particles: Particle[], dt: number, onUpdate?: OnUpdateParticle) => {
+	function updateParticles(
+		context: CanvasRenderingContext2D,
+		particles: Particle[],
+		dt: number,
+		onUpdate?: OnUpdateParticle,
+	): boolean {
 		const CW = context.canvas.width;
 		const CH = context.canvas.height;
 		let livingParticles = particles.length;
 
-		// eslint-disable-next-line no-loops/no-loops
-		for (let i = 0; i < particles.length; ++i) {
-			// eslint-disable-next-line security/detect-object-injection
-			const P = particles[i];
-			if (P.dead) {
+		for (let index = 0; index < particles.length; ++index) {
+			const PARTICLE = particles[index];
+
+			if (PARTICLE.dead) {
 				livingParticles--;
 			} else {
-				updateParticle(P, dt);
-				if (isOutOfBounds(P, CW, CH)) P.dead = true;
-				if (onUpdate) onUpdate(P, dt);
+				updateParticle(PARTICLE, dt);
+
+				if (isOutOfBounds(PARTICLE, CW, CH)) PARTICLE.dead = true;
+				if (onUpdate) onUpdate(PARTICLE, dt);
 			}
 		}
 
 		return livingParticles > 0;
-	};
+	}
 
-	const start = (
-		canvas: HTMLCanvasElement,
-		onCompleted: () => void,
-		particleCount: number,
-		origin: Position | undefined,
-		force: number,
-		angle: number,
-		spread: number,
-		styles: ParticleStyle[],
-		onCreate?: OnCreateParticle,
-		onUpdate?: OnUpdateParticle,
-	) => {
-		const CONTEXT = canvas.getContext('2d');
-		if (!CONTEXT) throw new Error('No context?');
+	interface StartOptions {
+		canvas: HTMLCanvasElement;
+		onCompleted: () => void;
+		particleCount: number;
+		origin: Position | undefined;
+		force: number;
+		angle: number;
+		spread: number;
+		styles: readonly ParticleStyle[];
+		onCreate?: OnCreateParticle;
+		onUpdate?: OnUpdateParticle;
+	}
 
-		const PARTICLES: Particle[] = Array.from({ length: particleCount }, () => createParticle(CONTEXT, origin, force, angle, spread, styles, onCreate));
+	function start(options: StartOptions): () => void {
+		const { canvas, onCompleted, particleCount, origin, force, angle, spread, styles, onCreate, onUpdate } = options;
+
+		if (particleCount <= 0) {
+			throw new Error('particleCount must be a positive integer');
+		}
+
+		const MAYBE_CONTEXT = canvas.getContext('2d');
+
+		if (!MAYBE_CONTEXT) {
+			throw new Error('Failed to get canvas 2D context');
+		}
+
+		const CONTEXT: CanvasRenderingContext2D = MAYBE_CONTEXT;
+
+		const PARTICLES: Particle[] = Array.from({ length: particleCount }, () =>
+			createParticle({ context: CONTEXT, origin, force, angle, spread, styles, onCreate }),
+		);
 
 		let frameId: number;
-		let t: number;
+		let timestamp: number;
 
-		const run = (_t: number) => {
+		function run(currentTimestamp: number): void {
 			renderParticles(CONTEXT, PARTICLES);
-			const DT = Math.min((_t - t) / 1e3, 0.1);
+			const DT = Math.min((currentTimestamp - timestamp) / 1e3, 0.1);
 			const STILL_RUNNING = updateParticles(CONTEXT, PARTICLES, DT, onUpdate);
+
 			if (STILL_RUNNING) {
-				t = _t;
+				timestamp = currentTimestamp;
 				frameId = requestAnimationFrame(run);
 			} else {
 				onCompleted();
 			}
-		};
+		}
 
-		t = performance.now();
+		timestamp = performance.now();
 		frameId = requestAnimationFrame(run);
 
 		return () => {
 			cancelAnimationFrame(frameId);
 		};
-	};
+	}
 </script>
 
 <script lang="ts">
-	import { onMount, createEventDispatcher } from 'svelte';
+	import { createEventDispatcher, onMount } from 'svelte';
 
-	/**
-	 * A list of render styles to use for the confetti. Each confetti will be assigned a random value from the list.
-	 * The values can either be valid HTML colors or an HTMLImageElement.
-	 * @default ['hotpink','gold','dodgerblue','tomato','rebeccapurple','lightgreen','turquoise']
-	 * @example
-	 * ```
-	 * <Confetti colors={['red', '#ff0000', 'hsl(250, 54%, 85%)']} />
-	 * ```
-	 */
-	export let styles: ParticleStyle[] = COLORS;
-	/**
-	 * The number of particles to create.
-	 * @default 50
-	 * @example
-	 * ```
-	 * <Confetti particleCount={100} />
-	 * ```
-	 */
+	export let styles: readonly ParticleStyle[] = COLORS;
 	export let particleCount = 50;
-	/**
-	 * The origin position of the confetti. If this is not passed in, the confetti will fall from the top of the screen.
-	 * @default undefined
-	 * @example
-	 * ```
-	 * <Confetti origin={[50, 50]} />
-	 * ```
-	 */
 	export let origin: Position | undefined = undefined;
-	/**
-	 * The force of the burst. A larger number will shoot the confetti faster and further. Has no effect if origin isn't passed in.
-	 * @default 15
-	 * @example
-	 * ```
-	 * <Confetti origin={[50, 50]} force={15} />
-	 * ```
-	 */
 	export let force = 15;
-	/**
-	 * Angle in degrees of the burst. This can be used together with spread to create a directed burst. Has no effect if origin isn't passed in.
-	 * @default 0
-	 * @example
-	 * ```
-	 * <Confetti origin={[50, 50]} angle={90} />
-	 * ```
-	 */
 	export let angle = 0;
-	/**
-	 * The spread in degrees of the burst. This can be used together with angle to create a directed burst. Has no effect if origin isn't passed in.
-	 * @default 360
-	 * @example
-	 * ```
-	 * <Confetti origin={[50, 50]} spread={90} />
-	 * ```
-	 */
 	export let spread = 360;
-	/**
-	 * By default, each particle is created with some random variation. The initial values of each particle can be overridden using the onCreate callback.
-	 * @default undefined
-	 * @example
-	 * ```
-	 * <Confetti
-	 *   onCreate={(particle) => {
-	 *     particle.style = 'blue';
-	 *     particle.x = window.innerWidth / 2;
-	 *     return particle;
-	 * 	 }}
-	 * />
-	 * ```
-	 */
 	export let onCreate: OnCreateParticle | undefined = undefined;
-	/**
-	 * The onUpdate callback can be used to modify the particle on each frame.
-	 * @default undefined
-	 * @example
-	 * ```
-	 * <Confetti
-	 *   onUpdate={(particle, deltaTime) => {
-	 *     if (particle.angle < 0 && particle.da < 0) {
-	 *       particle.da *= -1;
-	 * 		 }
-	 * 	 }}
-	 * />
-	 * ```
-	 */
 	export let onUpdate: OnUpdateParticle | undefined = undefined;
 
-	const dispatch = createEventDispatcher();
+	const Dispatch = createEventDispatcher<{ completed: null }>();
 
+	let canvasWidth: number;
+	let canvasHeight: number;
 	let canvas: HTMLCanvasElement;
-	let w: number;
-	let h: number;
 
 	onMount(() => {
-		canvas.width = w;
-		canvas.height = h;
-		return start(canvas, () => dispatch('completed'), particleCount, origin, force, angle, spread, styles, onCreate, onUpdate);
+		canvas.width = canvasWidth;
+		canvas.height = canvasHeight;
+
+		return start({
+			canvas,
+			onCompleted: () => Dispatch('completed'),
+			particleCount,
+			origin,
+			force,
+			angle,
+			spread,
+			styles,
+			onCreate,
+			onUpdate,
+		});
 	});
 </script>
 
-<svelte:window bind:innerWidth={w} bind:innerHeight={h} />
-<canvas bind:this={canvas} width={w} height={h} />
+<svelte:window bind:innerHeight={canvasHeight} bind:innerWidth={canvasWidth} />
+<canvas width={canvasWidth} height={canvasHeight} bind:this={canvas}></canvas>
 
 <style>
 	canvas {

@@ -12,20 +12,20 @@
 		"target": "ES6", // Modern browsers fully support ES6
 		"allowJs": true, // Allow JavaScript files to be compiled
 		"checkJs": true, // Check JavaScript files
-		"declaration": true, // Generates corresponding .d.ts files
-		"declarationMap": true, // Generates a source map for each corresponding declaration file
-		"esModuleInterop": true, // Enables interoperability between CommonJS and ES Modules
-		"forceConsistentCasingInFileNames": true, // Ensures that the casing of file names is consistent
-		"isolatedModules": true, // Prevents TS features that are unsafe when treating modules as isolated files
-		"moduleDetection": "force", // Forces TypeScript to consider all files as modules. This helps to avoid 'cannot redeclare block-scoped variable' errors.
-		"noEmit": true, // Tells TypeScript not to emit any files. This is important when you're using a bundler so you don't emit useless .js files
-		"noImplicitAny": true, // Raise error on expressions and declarations with an implied 'any' type
-		"noImplicitThis": true, // Raise error on 'this' expressions with an implied 'any' type
+		"declaration": true, // Generate corresponding .d.ts files
+		"declarationMap": true, // Generate a source map for each corresponding declaration file
+		"esModuleInterop": true, // Enable interoperability between CommonJS and ES Modules
+		"forceConsistentCasingInFileNames": true, // Ensure that the casing of file names is consistent
+		"isolatedModules": true, // Prevent TypeScript features that are unsafe when treating modules as isolated files
+		"moduleDetection": "force", // Force TypeScript to consider all files as modules. This helps to avoid 'cannot redeclare block-scoped variable' errors.
+		"noEmit": true, // Tell TypeScript not to emit any files. This is important when you're using a bundler so you don't emit unnecessary .js files
+		"noImplicitAny": true, // Raise errors on expressions and declarations with an implied 'any' type
+		"noImplicitThis": true, // Raise errors on 'this' expressions with an implied 'any' type
 		"noUnusedLocals": true, // Report errors on unused locals
 		"noUnusedParameters": true, // Report errors on unused parameters
-		"resolveJsonModule": true, // Allows importing modules with a .json extension
-		"skipLibCheck": true, // Skips checking the types of .d.ts files. This is important for performance, because otherwise all node_modules will be checked
-		"sourceMap": true, // To have warnings/errors of the Svelte compiler at the correct position, enable source maps by default
+		"resolveJsonModule": true, // Allow importing modules with a .json extension
+		"skipLibCheck": true, // Skip checking the types of .d.ts files. This improves performance, because otherwise all node_modules will be checked
+		"sourceMap": true, // To have warnings/errors from the Svelte compiler at the correct position, enable source maps by default
 		"strictFunctionTypes": true, // Enable strict checking of function types
 		"strictNullChecks": true, // Enable strict null checks
 		"strictPropertyInitialization": true // Enable strict checking of property initialization in classes
@@ -36,7 +36,11 @@
 		"src/**/*.d.ts",
 		"src/**/*.ts",
 		"src/**/*.js",
-		"src/**/*.svelte"
+		"src/**/*.svelte",
+		".commitlintrc.ts",
+		"eslint.config.ts",
+		"svelte.config.js",
+		"vite.config.ts"
 	],
 	"exclude": [
 		"node_modules",
@@ -44,7 +48,13 @@
 		"public",
 		"static",
 		"svelte-kit",
+		"*.backup.*",
 		"*.backup",
-		"*.cjs"
+		"*.bak.*",
+		"*.bak",
+		"*.local-backup.*",
+		"*.local-backup",
+		"*.local.*",
+		"*.local"
 	]
 }

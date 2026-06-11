@@ -3,18 +3,26 @@ import type { OnCreateParticle, Particle, ParticleStyle, Position } from './type
 import { BOUNDARY, DEG_TO_RAD, ROTATION_SPEED } from './constants';
 import { random } from './random';
 
-const createParticle = (
-	context: CanvasRenderingContext2D,
-	origin: Position | undefined,
-	force: number,
-	angle: number,
-	spread: number,
-	styles: ParticleStyle[],
-	onCreate?: OnCreateParticle,
-) => {
+interface CreateParticleOptions {
+	context: CanvasRenderingContext2D;
+	origin: Position | undefined;
+	force: number;
+	angle: number;
+	spread: number;
+	styles: readonly ParticleStyle[];
+	onCreate?: OnCreateParticle;
+}
+
+function createParticle(options: CreateParticleOptions): Particle {
+	const { context, origin, force, angle, spread, styles, onCreate } = options;
+
+	if (styles.length === 0) {
+		throw new Error('styles array must contain at least one ParticleStyle');
+	}
+
 	let dir: number;
-	let x: number;
-	let y: number;
+	let positionX: number;
+	let positionY: number;
 	let vx: number;
 	let vy: number;
 	const STYLE = styles[Math.floor(random(styles.length))];
@@ -22,16 +30,16 @@ const createParticle = (
 
 	if (origin) {
 		// Generate a confetti burst effect using the provided origin coordinates
-		x = origin[0];
-		y = origin[1];
+		positionX = origin[0];
+		positionY = origin[1];
 		vx = random(force, 5);
 		vy = random(force, 5);
 		dir = random(angle + spread / 2, angle - spread / 2) * DEG_TO_RAD;
 		da *= 2;
 	} else {
 		// If no origin is provided, confetti falls from the top edge of the canvas
-		x = random(context.canvas.width);
-		y = random(-BOUNDARY);
+		positionX = random(context.canvas.width);
+		positionY = random(-BOUNDARY);
 		vx = random(5);
 		vy = random(5, 1);
 		dir = random(180) * DEG_TO_RAD;
@@ -44,8 +52,8 @@ const createParticle = (
 		dead: false,
 		life: 0,
 		delay: 0,
-		x,
-		y,
+		x: positionX,
+		y: positionY,
 		angle: random(360),
 		da,
 		dx: DX * vx,
@@ -58,39 +66,47 @@ const createParticle = (
 	};
 
 	if (onCreate) particle = onCreate(particle);
-	return particle;
-};
 
-const renderParticle = (context: CanvasRenderingContext2D, p: Particle) => {
-	const ANGLE_IN_RADIANS = p.angle * DEG_TO_RAD;
+	return particle;
+}
+
+function renderParticle(context: CanvasRenderingContext2D, particle: Particle): void {
+	const ANGLE_IN_RADIANS = particle.angle * DEG_TO_RAD;
 	const COS = Math.cos(ANGLE_IN_RADIANS);
 	const SIN = Math.sin(ANGLE_IN_RADIANS);
-	context.setTransform(COS, SIN, -SIN, COS, p.x, p.y);
-	if (p.style instanceof HTMLImageElement) {
-		context.drawImage(p.style, -p.style.width / 2, -p.style.height / 2);
+	context.setTransform(COS, SIN, -SIN, COS, particle.x, particle.y);
+
+	if (particle.style instanceof HTMLImageElement) {
+		context.drawImage(particle.style, -particle.style.width / 2, -particle.style.height / 2);
+	} else if (typeof particle.style === 'string') {
+		context.fillStyle = particle.style;
+		context.fillRect(particle.w * -0.5, particle.h * -0.5, particle.w, particle.h);
 	} else {
-		context.fillStyle = p.style;
-		context.fillRect(p.w * -0.5, p.h * -0.5, p.w, p.h);
+		throw new Error(`Unhandled ParticleStyle type: "${String(particle.style)}"`);
 	}
+
 	context.setTransform(1, 0, 0, 1, 0, 0);
-};
+}
 
-const updateParticle = (p: Particle, dt: number) => {
-	p.life += dt;
-	if (p.dead || p.life < p.delay) return;
+function updateParticle(particle: Particle, dt: number): void {
+	particle.life += dt;
+
+	if (particle.dead || particle.life < particle.delay) return;
 	const FRAME_SCALE = dt * 60;
-	p.angle += p.da * dt * ROTATION_SPEED;
-	p.dy += p.gy * dt * ROTATION_SPEED;
-	p.dx += (3 * Math.sin(p.life * p.xw) + Math.sin(p.life * p.xw * 2.3)) * dt;
+	particle.angle += particle.da * dt * ROTATION_SPEED;
+	particle.dy += particle.gy * dt * ROTATION_SPEED;
+	particle.dx += (3 * Math.sin(particle.life * particle.xw) + Math.sin(particle.life * particle.xw * 2.3)) * dt;
 	const DRAG = 0.98 ** FRAME_SCALE;
-	p.dx *= DRAG;
-	p.dy *= DRAG;
-	p.x += p.dx * FRAME_SCALE;
-	p.y += p.dy * FRAME_SCALE;
-};
+	particle.dx *= DRAG;
+	particle.dy *= DRAG;
+	particle.x += particle.dx * FRAME_SCALE;
+	particle.y += particle.dy * FRAME_SCALE;
+}
 
-const isOutOfBounds = (p: Particle, canvasWidth: number, canvasHeight: number) => {
-	return p.x < -BOUNDARY || p.x > canvasWidth + BOUNDARY || p.y > canvasHeight + BOUNDARY;
-};
+function isOutOfBounds(particle: Particle, canvasWidth: number, canvasHeight: number): boolean {
+	return particle.x < -BOUNDARY || particle.x > canvasWidth + BOUNDARY || particle.y > canvasHeight + BOUNDARY;
+}
 
-export { createParticle, renderParticle, updateParticle, isOutOfBounds };
+export type { CreateParticleOptions };
+
+export { createParticle, isOutOfBounds, renderParticle, updateParticle };
