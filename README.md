@@ -13,13 +13,7 @@ Canvas-based confetti for Svelte 🎉, with no dependencies.
 * Supports image-based confetti.
 * Allows full customization of confetti behavior using the `onCreate` and `onUpdate` hooks.
 
-## Examples
-
-[Simple Demo](https://svelte.dev/repl/84bb431468264dabbfdd0750ef949f9f?version=3.50.1)
-
-[Firework Demo](https://svelte.dev/repl/8d05b7c60c244fe0b7e09b027dd3bc5d?version=3.50.1)
-
-[Advanced Demo](https://svelte.dev/repl/5cefe21763c445d986c6e23ddea1327a?version=3.50.1)
+## 🚀 [Demo](https://svelte-canvas-confetti.vercel.app/)
 
 ## Installation
 
@@ -28,6 +22,13 @@ Use your package manager to install:
 ```shell
 npm i @castlenine/svelte-canvas-confetti
 ```
+
+## Compatibility
+
+| Package version | Svelte version | Production Branch | Development Branch |
+|---|---|---|---|
+| `v5.x.y` (`latest`) | Svelte 5 | `main` | `development` |
+| `v1.x.y` (`legacy`) | Svelte 3 / 4 | `v1/main` | `v1/development` |
 
 ## Basic Usage
 
@@ -83,6 +84,49 @@ If no properties are passed in, it will behave the same as **FallingConfetti**.
 <Confetti />
 ```
 
+## Image Handling
+
+You can use images instead of colors by passing `HTMLImageElement` instances to the `styles` prop. It is recommended to use [Vite's built-in asset handling](https://vite.dev/guide/assets) to import images from `$lib/assets` — this ensures proper asset hashing, inlining of small files, and build-time optimization.
+
+```svelte
+<script lang="ts">
+  import { onMount } from 'svelte';
+
+  import { FallingConfetti } from '@castlenine/svelte-canvas-confetti';
+
+  import SmallLogo from '$lib/assets/logos/logo-small.png';
+
+  let imageLogo: HTMLImageElement | null = null;
+  let showConfetti = false;
+
+  onMount(() => {
+    const IMAGE = new Image();
+    IMAGE.src = SmallLogo;
+
+    IMAGE.decode()
+      .then(() => {
+        imageLogo = IMAGE;
+        showConfetti = true;
+      })
+
+      .catch(() => {
+        console.warn('Failed to load confetti image');
+      });
+  });
+</script>
+
+{#if showConfetti && imageLogo}
+  <FallingConfetti
+    particleCount={142}
+    styles={[imageLogo]}
+    on:completed={() => {
+      showConfetti = false;
+    }} />
+{/if}
+```
+
+The image import path can be placed wherever appropriate in your project, using any alias you prefer (e.g., `$lib/assets/images/`, `$lib/assets/logos/`, `$assets/images/`).
+
 ## Props
 
 ### particleCount
@@ -101,7 +145,7 @@ The number of particles to create.
 
 A list of styles used to render particles. Can be any valid HTML color or an `HTMLImageElement`.
 
-**Type:** `ParticleStyle[]`
+**Type:** `readonly ParticleStyle[]`
 **Default value:** `['hotpink', 'gold', 'dodgerblue', 'tomato', 'rebeccapurple', 'lightgreen', 'turquoise']`
 **Example:**
 
@@ -157,7 +201,7 @@ The spread used when creating each particle’s initial direction. The particle'
 <Confetti origin={[100, 100]} spread={45} />
 ```
 
-## onCreate
+### onCreate
 
 This can be used to override the properties of each particle at creation time.
 
@@ -170,12 +214,13 @@ This can be used to override the properties of each particle at creation time.
   onCreate={(particle) => {
     particle.x = 0;
     particle.y = 0;
+
     return particle;
   }}
 />
 ```
 
-## onUpdate
+### onUpdate
 
 This can be used to override the properties of each particle at update time.
 
@@ -191,10 +236,29 @@ This can be used to override the properties of each particle at update time.
 />
 ```
 
-## Particle object
+### on:completed
+
+An event dispatched when all particles have exited the screen.
+
+**Type:** `() => void`
+**Example:**
+
+```svelte
+<script>
+  import { Confetti } from '@castlenine/svelte-canvas-confetti';
+
+  let showConfetti = true;
+</script>
+
+{#if showConfetti}
+  <Confetti on:completed={() => { showConfetti = false; }} />
+{/if}
+```
+
+## Particle Object
 
 ```typescript
-export type Particle = {
+interface Particle {
   // Stop updating/rendering the particle once it is "dead" (i.e., off screen)
   dead: boolean;
 
@@ -236,7 +300,7 @@ export type Particle = {
 
   // The style of the particle. Either an HTML color or an HTMLImageElement.
   style: ParticleStyle;
-};
+}
 ```
 
 ## Exported Types
@@ -263,5 +327,5 @@ Forked from [andreasmcdermott/svelte-canvas-confetti](https://github.com/andreas
 [npm.badge]: https://img.shields.io/npm/v/@castlenine/svelte-canvas-confetti
 [download]: https://www.npmjs.com/package/@castlenine/svelte-canvas-confetti
 [download.badge]: https://img.shields.io/npm/d18m/@castlenine/svelte-canvas-confetti
-[contribution]: https://github.com/Castlenine/svelte-aoe
+[contribution]: https://github.com/castlenine/svelte-canvas-confetti
 [contribution.badge]: https://img.shields.io/badge/contributions-welcome-green

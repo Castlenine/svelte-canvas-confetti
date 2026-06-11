@@ -2,7 +2,7 @@ type ParticleStyle = string | HTMLImageElement;
 
 type Position = [number, number];
 
-type Particle = {
+interface Particle {
 	dead: boolean;
 	life: number;
 	delay: number;
@@ -17,10 +17,10 @@ type Particle = {
 	gy: number;
 	xw: number;
 	style: ParticleStyle;
-};
+}
 
 type OnCreateParticle = (p: Particle) => Particle;
 
 type OnUpdateParticle = (p: Particle, dt: number) => void;
 
-export type { ParticleStyle, Position, Particle, OnCreateParticle, OnUpdateParticle };
+export type { OnCreateParticle, OnUpdateParticle, Particle, ParticleStyle, Position };

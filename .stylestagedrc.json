@@ -1,0 +1,3 @@
+{
+  "*.{css,svelte}": ["pnpm stylelint:staged:fix", "pnpm format:staged"]
+}

@@ -1,57 +1,25 @@
+<!--
+@component
+Falling confetti effect. Particles spawn along the top edge of the viewport and drift downward with gravity and wind simulation.
+
+&nbsp;
+
+@prop styles {readonly ParticleStyle[]} [undefined] - Render styles for confetti. Valid HTML colors or HTMLImageElement.
+@prop particleCount {number} [50] - Number of particles to create.
+@prop onCreate {OnCreateParticle} [undefined] - Callback to override initial particle values at creation time.
+@prop onUpdate {OnUpdateParticle} [undefined] - Callback called each frame per particle for custom animation logic.
+@callback on:completed {() => void} - Dispatched when all particles have exited the screen.
+-->
+
 <script lang="ts">
 	import type { OnCreateParticle, OnUpdateParticle, ParticleStyle } from './utils/types';
 
 	import Confetti from './Confetti.svelte';
 
-	/**
-	 * A list of render styles to use for the confetti. Each confetti will be assigned a random value from the list.
-	 * The values can either be valid HTML colors or an HTMLImageElement.
-	 * @default ['hotpink','gold','dodgerblue','tomato','rebeccapurple','lightgreen','turquoise']
-	 * @example
-	 * ```
-	 * <Confetti colors={['red', '#ff0000', 'hsl(250, 54%, 85%)']} />
-	 * ```
-	 */
-	export let styles: ParticleStyle[] | undefined = undefined;
-	/**
-	 * The number of particles to create.
-	 * @default 50
-	 * @example
-	 * ```
-	 * <Confetti particleCount={100} />
-	 * ```
-	 */
+	export let styles: readonly ParticleStyle[] | undefined = undefined;
 	export let particleCount = 50;
-	/**
-	 * By default, each particle is created with some random variation. The initial values of each particle can be overridden using the onCreate callback.
-	 * @default undefined
-	 * @example
-	 * ```
-	 * <Confetti
-	 *   onCreate={(particle) => {
-	 *     particle.style = 'blue';
-	 *     particle.x = window.innerWidth / 2;
-	 *     return particle;
-	 * 	 }}
-	 * />
-	 * ```
-	 */
 	export let onCreate: OnCreateParticle | undefined = undefined;
-	/**
-	 * The onUpdate callback can be used to modify the particle on each frame.
-	 * @default undefined
-	 * @example
-	 * ```
-	 * <Confetti
-	 *   onUpdate={(particle, deltaTime) => {
-	 *     if (particle.angle < 0 && particle.da < 0) {
-	 *       particle.da *= -1;
-	 * 		 }
-	 * 	 }}
-	 * />
-	 * ```
-	 */
 	export let onUpdate: OnUpdateParticle | undefined = undefined;
 </script>
 
-<Confetti {particleCount} {styles} {onCreate} {onUpdate} on:completed />
+<Confetti {particleCount} {styles} on:completed {onCreate} {onUpdate} />
