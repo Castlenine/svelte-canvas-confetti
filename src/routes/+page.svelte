@@ -4,7 +4,8 @@
 
 	import { onMount } from 'svelte';
 
-	import { coinFlip, ConfettiBurst, ConfettiCannon, FallingConfetti, random } from '$lib';
+	import { ConfettiBurst, ConfettiCannon, FallingConfetti } from '$lib';
+	import { coinFlip, random } from '$lib/utils/random';
 
 	import ParachuteAssetImage from './assets/images/parachute.png';
 
