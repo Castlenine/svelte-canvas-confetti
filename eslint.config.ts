@@ -32,6 +32,9 @@ const CONFIGURATION = defineConfig(
 			'*.local-backup.*',
 			// Static assets
 			'static/',
+			// Vite
+			'vite.config.js.timestamp-*',
+			'vite.config.ts.timestamp-*',
 		],
 	},
 
