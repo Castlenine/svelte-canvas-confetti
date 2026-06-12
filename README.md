@@ -23,6 +23,13 @@ Use your package manager to install:
 npm i @castlenine/svelte-canvas-confetti
 ```
 
+## Compatibility
+
+| Package version | Svelte version | Production Branch | Development Branch |
+|---|---|---|---|
+| `v5.x.y` (`latest`) | Svelte 5 | `main` | `development` |
+| `v1.x.y` (`legacy`) | Svelte 3 / 4 | `v1/main` | `v1/development` |
+
 ## Basic Usage
 
 The package includes four Svelte components.
@@ -79,7 +86,7 @@ If no properties are passed in, it will behave the same as **FallingConfetti**.
 
 ## Image Handling
 
-You can use images instead of colors by passing `HTMLImageElement` instances to the `styles` prop. It is recommended to use [Vite's built-in image handling](https://svelte.dev/docs/kit/images#Vite's-built-in-handling) to import images from `$lib/assets` — this ensures proper asset hashing, inlining of small files, and tree-shaking.
+You can use images instead of colors by passing `HTMLImageElement` instances to the `styles` prop. It is recommended to use [Vite's built-in asset handling](https://svelte.dev/docs/kit/images#Vite's-built-in-handling) to import images from `$lib/assets` — this ensures proper asset hashing, inlining of small files, and build-time optimization.
 
 ```svelte
 <script lang="ts">
@@ -207,6 +214,7 @@ This can be used to override the properties of each particle at creation time.
   onCreate={(particle) => {
     particle.x = 0;
     particle.y = 0;
+
     return particle;
   }}
 />
@@ -320,5 +328,5 @@ Forked from [andreasmcdermott/svelte-canvas-confetti](https://github.com/andreas
 [npm.badge]: https://img.shields.io/npm/v/@castlenine/svelte-canvas-confetti
 [download]: https://www.npmjs.com/package/@castlenine/svelte-canvas-confetti
 [download.badge]: https://img.shields.io/npm/d18m/@castlenine/svelte-canvas-confetti
-[contribution]: https://github.com/Castlenine/svelte-aoe
+[contribution]: https://github.com/castlenine/svelte-canvas-confetti
 [contribution.badge]: https://img.shields.io/badge/contributions-welcome-green
