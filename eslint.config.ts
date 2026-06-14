@@ -166,6 +166,8 @@ const CONFIGURATION = defineConfig(
 
 			// ── Correctness (override recommended levels) ──
 			'no-undef': 'off', // TypeScript compiler catches undefined variables; this rule false-positives on global types, ambient declarations, and Svelte runes
+			'no-useless-assignment': 'error', // May false-positive on Svelte $bindable() — value is read by parent via bind: directive (https://github.com/sveltejs/eslint-plugin-svelte/issues/1478).
+			// If you encounter a false positive for `no-useless-assignment` due to Svelte's $bindable() usage, add: `// eslint-disable-next-line no-useless-assignment -- $bindable() values are accessed by parents via Svelte's bind: directive (see eslint-plugin-svelte#1478)`
 			'no-loss-of-precision': 'error',
 			'no-nonoctal-decimal-escape': 'error',
 
