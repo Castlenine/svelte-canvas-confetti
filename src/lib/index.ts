@@ -1,9 +1,17 @@
-export type { OnCreateParticle, OnUpdateParticle, Particle, ParticleStyle, Position } from './utils/types';
+export type { CreateTextStyleOptions } from '$lib/utils/create-text-style';
 
-export { default as Confetti } from './Confetti.svelte';
+export type { OnCreateParticle, OnUpdateParticle, Particle, ParticleStyle, Position } from '$lib/utils/types';
 
-export { default as ConfettiBurst } from './ConfettiBurst.svelte';
+export { default as Confetti } from '$lib/Confetti.svelte';
 
-export { default as ConfettiCannon } from './ConfettiCannon.svelte';
+export { default as ConfettiBurst } from '$lib/ConfettiBurst.svelte';
 
-export { default as FallingConfetti } from './FallingConfetti.svelte';
+export { default as ConfettiCannon } from '$lib/ConfettiCannon.svelte';
+
+export { default as ConfettiFireworks } from '$lib/ConfettiFireworks.svelte';
+
+export { default as ConfettiSparkle } from '$lib/ConfettiSparkle.svelte';
+
+export { default as FallingConfetti } from '$lib/FallingConfetti.svelte';
+
+export { createTextStyle } from '$lib/utils/create-text-style';

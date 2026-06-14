@@ -1,4 +1,4 @@
-type ParticleStyle = string | HTMLImageElement;
+type ParticleStyle = string | CanvasImageSource;
 
 type Position = [number, number];
 
@@ -17,6 +17,7 @@ interface Particle {
 	gy: number;
 	xw: number;
 	style: ParticleStyle;
+	opacity?: number;
 }
 
 type OnCreateParticle = (p: Particle) => Particle;

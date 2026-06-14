@@ -4,7 +4,7 @@ Falling confetti effect. Particles spawn along the top edge of the viewport and 
 
 &nbsp;
 
-@prop styles {readonly ParticleStyle[]} [undefined] - Render styles for confetti. Valid HTML colors or HTMLImageElement.
+@prop styles {readonly ParticleStyle[]} [undefined] - Render styles for confetti. Valid HTML colors, HTMLImageElement, or CanvasImageSource.
 @prop particleCount {number} [50] - Number of particles to create.
 @prop onCreate {OnCreateParticle} [undefined] - Callback to override initial particle values at creation time.
 @prop onUpdate {OnUpdateParticle} [undefined] - Callback called each frame per particle for custom animation logic.
@@ -12,9 +12,17 @@ Falling confetti effect. Particles spawn along the top edge of the viewport and 
 -->
 
 <script lang="ts">
-	import type { OnCreateParticle, OnUpdateParticle, ParticleStyle } from './utils/types';
+	import type { OnCreateParticle, OnUpdateParticle, ParticleStyle } from '$lib/utils/types';
 
-	import Confetti from './Confetti.svelte';
+	import Confetti from '$lib/Confetti.svelte';
+
+	interface Props {
+		styles?: readonly ParticleStyle[];
+		particleCount?: number;
+		onCreate?: OnCreateParticle;
+		onUpdate?: OnUpdateParticle;
+		onCompleted?: () => void;
+	}
 
 	const {
 		styles = undefined,
@@ -22,13 +30,7 @@ Falling confetti effect. Particles spawn along the top edge of the viewport and 
 		onCreate = undefined,
 		onUpdate = undefined,
 		onCompleted,
-	} = $props<{
-		styles?: readonly ParticleStyle[];
-		particleCount?: number;
-		onCreate?: OnCreateParticle;
-		onUpdate?: OnUpdateParticle;
-		onCompleted?: () => void;
-	}>();
+	}: Props = $props();
 </script>
 
 <Confetti {particleCount} {styles} {onCompleted} {onCreate} {onUpdate} />

@@ -1,7 +1,7 @@
-import type { OnCreateParticle, Particle, ParticleStyle, Position } from './types';
+import type { OnCreateParticle, Particle, ParticleStyle, Position } from '$lib/utils/types';
 
-import { BOUNDARY, DEG_TO_RAD, ROTATION_SPEED } from './constants';
-import { random } from './random';
+import { BOUNDARY, DEG_TO_RAD, ROTATION_SPEED } from '$lib/utils/constants';
+import { random } from '$lib/utils/random';
 
 interface CreateParticleOptions {
 	context: CanvasRenderingContext2D;
@@ -48,6 +48,8 @@ function createParticle(options: CreateParticleOptions): Particle {
 	const DX = Math.cos(dir);
 	const DY = Math.sin(dir);
 
+	const IS_SIZED_STYLE = STYLE instanceof HTMLCanvasElement || STYLE instanceof HTMLImageElement;
+
 	let particle: Particle = {
 		dead: false,
 		life: 0,
@@ -58,14 +60,31 @@ function createParticle(options: CreateParticleOptions): Particle {
 		da,
 		dx: DX * vx,
 		dy: DY * vy,
-		w: random(18, 10),
-		h: random(6, 4),
+		w: IS_SIZED_STYLE ? STYLE.width : random(18, 10),
+		h: IS_SIZED_STYLE ? STYLE.height : random(6, 4),
 		gy: random(4.5, 2),
 		xw: random(6, 1),
 		style: STYLE,
+		opacity: 1,
 	};
 
-	if (onCreate) particle = onCreate(particle);
+	if (onCreate) {
+		const AUTO_W = particle.w;
+		const AUTO_H = particle.h;
+		particle = onCreate(particle);
+
+		if (IS_SIZED_STYLE) {
+			const IS_W_CHANGED = particle.w !== AUTO_W;
+			const IS_H_CHANGED = particle.h !== AUTO_H;
+			const ASPECT = AUTO_W / AUTO_H;
+
+			if (IS_W_CHANGED && !IS_H_CHANGED) {
+				particle.h = particle.w / ASPECT;
+			} else if (!IS_W_CHANGED && IS_H_CHANGED) {
+				particle.w = particle.h * ASPECT;
+			}
+		}
+	}
 
 	return particle;
 }
@@ -75,16 +94,16 @@ function renderParticle(context: CanvasRenderingContext2D, particle: Particle): 
 	const COS = Math.cos(ANGLE_IN_RADIANS);
 	const SIN = Math.sin(ANGLE_IN_RADIANS);
 	context.setTransform(COS, SIN, -SIN, COS, particle.x, particle.y);
+	context.globalAlpha = particle.opacity ?? 1;
 
-	if (particle.style instanceof HTMLImageElement) {
-		context.drawImage(particle.style, -particle.style.width / 2, -particle.style.height / 2);
-	} else if (typeof particle.style === 'string') {
+	if (typeof particle.style === 'string') {
 		context.fillStyle = particle.style;
 		context.fillRect(particle.w * -0.5, particle.h * -0.5, particle.w, particle.h);
 	} else {
-		throw new Error(`Unhandled ParticleStyle type: "${String(particle.style)}"`);
+		context.drawImage(particle.style, -particle.w / 2, -particle.h / 2, particle.w, particle.h);
 	}
 
+	context.globalAlpha = 1;
 	context.setTransform(1, 0, 0, 1, 0, 0);
 }
 

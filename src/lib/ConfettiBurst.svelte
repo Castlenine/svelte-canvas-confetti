@@ -5,7 +5,7 @@ Confetti burst effect. Spawns particles from a single origin point that explode 
 &nbsp;
 
 @prop origin {Position} - Origin position [x, y] of the confetti burst. Required.
-@prop styles {readonly ParticleStyle[]} [undefined] - Render styles for confetti. Valid HTML colors or HTMLImageElement.
+@prop styles {readonly ParticleStyle[]} [undefined] - Render styles for confetti. Valid HTML colors, HTMLImageElement, or CanvasImageSource.
 @prop particleCount {number} [50] - Number of particles to create.
 @prop onCreate {OnCreateParticle} [undefined] - Callback to override initial particle values at creation time.
 @prop onUpdate {OnUpdateParticle} [undefined] - Callback called each frame per particle for custom animation logic.
@@ -13,9 +13,18 @@ Confetti burst effect. Spawns particles from a single origin point that explode 
 -->
 
 <script lang="ts">
-	import type { OnCreateParticle, OnUpdateParticle, ParticleStyle, Position } from './utils/types';
+	import type { OnCreateParticle, OnUpdateParticle, ParticleStyle, Position } from '$lib/utils/types';
 
-	import Confetti from './Confetti.svelte';
+	import Confetti from '$lib/Confetti.svelte';
+
+	interface Props {
+		origin: Position;
+		styles?: readonly ParticleStyle[];
+		particleCount?: number;
+		onCreate?: OnCreateParticle;
+		onUpdate?: OnUpdateParticle;
+		onCompleted?: () => void;
+	}
 
 	const {
 		origin,
@@ -24,14 +33,7 @@ Confetti burst effect. Spawns particles from a single origin point that explode 
 		onCreate = undefined,
 		onUpdate = undefined,
 		onCompleted,
-	} = $props<{
-		origin: Position;
-		styles?: readonly ParticleStyle[];
-		particleCount?: number;
-		onCreate?: OnCreateParticle;
-		onUpdate?: OnUpdateParticle;
-		onCompleted?: () => void;
-	}>();
+	}: Props = $props();
 </script>
 
 <Confetti {origin} {particleCount} {styles} {onCompleted} {onCreate} {onUpdate} />
