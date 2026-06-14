@@ -15,7 +15,7 @@ Canvas-based confetti for Svelte 🎉, with no dependencies.
 * Particle opacity control for fade and twinkle animations.
 * Allows full customization of confetti behavior using the `onCreate` and `onUpdate` hooks.
 
-## 🚀 [Demo](https://svelte-canvas-confetti.vercel.app/)
+## 🚀 [Demo & Code Examples](https://svelte-canvas-confetti.vercel.app/)
 
 ## Installation
 
