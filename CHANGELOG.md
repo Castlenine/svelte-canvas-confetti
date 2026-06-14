@@ -5,6 +5,45 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [5.2.0] - 2026-06-13
+
+### Added
+
+- `ConfettiFireworks` component — two-phase fireworks effect (rocket launch → confetti burst at peak)
+- `ConfettiSparkle` component — sparkle/twinkle effect with pulsing opacity at random positions
+- `createTextStyle` utility function — renders text/emoji to `HTMLCanvasElement` for use as particle styles
+- `CreateTextStyleOptions` type export
+- Optional `opacity` property on `Particle` interface for controlling particle transparency
+- `CanvasImageSource` support in `ParticleStyle` type (enables `HTMLCanvasElement`, `ImageBitmap`, etc.)
+- Auto-sizing of `HTMLCanvasElement` and `HTMLImageElement` particle dimensions in `createParticle` — `createTextStyle` output and images now render at correct size without needing an `onCreate` callback
+- Mixed styles support — all style types (colors, text/emoji, images) can be combined in the same `styles` array
+- Image particles now use `particle.w/h` for rendering, enabling `onCreate`-based image resizing
+- Aspect-ratio auto-correction — setting only `w` or `h` via `onCreate` on image/canvas particles auto-scales the other dimension proportionally
+- Added AI Disclosure to `CONTRIBUTING.md` and PR template
+
+### Changed
+
+- Widened `ParticleStyle` type from `string | HTMLImageElement` to `string | CanvasImageSource`
+- Unified `renderParticle` — `HTMLImageElement` and `CanvasImageSource` now share the same `drawImage` path using `particle.w/h`
+- Updated `@component` JSDoc in `ConfettiBurst`, `ConfettiCannon`, and `FallingConfetti` to document `CanvasImageSource` style support
+- Updated `@component` JSDoc in `Confetti` to document mixed styles, auto-sizing, and aspect-ratio preservation
+- Updated `createTextStyle` JSDoc to document `color` option behavior and auto-sizing
+- Removed `preinstall` and `prepare` lifecycle scripts from `package.json` to eliminate `allowBuilds` requirement for consumers using pnpm v9+
+- Renamed `prepare` script to `dev:prepare` (non-lifecycle) with pnpm enforcement, `svelte-kit sync`, and Lefthook install
+- Updated `devDependencies` and `packageManager`
+
+### Demo
+
+- Redesigned demo page with tab-based navigation (Falling, Burst, Cannon, Sparkle, Fireworks, Parachutes, Emoji)
+- Full interactive controls for all component props (particle count, styles, origin, force, angle, spread, duration, sparkle speed, area, firework count, burst/launch force, stagger delay, rocket color)
+- `StylePicker` control with color presets, custom colors, emoji presets, custom text, and image upload — all style types can be mixed freely
+- Separate font size inputs for emoji presets and custom text in `StylePicker` (12–64px)
+- Text color picker for custom text in `StylePicker` — each text entry can have its own fill color
+- Per-image width/height controls in `StylePicker` with "auto" option for aspect-ratio-preserving resizing
+- Fixed blob URL memory leak on image removal in `StylePicker`
+- Dynamic code example viewer with syntax highlighting and copy button — updates reactively as controls change
+- Dark theme redesign
+
 ## [5.1.0] - 2026-06-12
 
 ### Breaking Changes
@@ -185,11 +224,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `random` and `coinFlip` utility re-exports
 - Zero runtime dependencies
 
-[5.1.0]: https://github.com/castlenine/svelte-canvas-confetti/compare/v5.0.2...v5.1.0
-[5.0.2]: https://github.com/castlenine/svelte-canvas-confetti/compare/v5.0.1...v5.0.2
-[5.0.1]: https://github.com/castlenine/svelte-canvas-confetti/compare/v5.0.0...v5.0.1
-[5.0.0]: https://github.com/castlenine/svelte-canvas-confetti/releases/tag/v5.0.0
-[1.2.1]: https://github.com/castlenine/svelte-canvas-confetti/compare/v1.2.0...v1.2.1
-[1.2.0]: https://github.com/castlenine/svelte-canvas-confetti/compare/v1.1.0...v1.2.0
-[1.1.0]: https://github.com/castlenine/svelte-canvas-confetti/compare/v1.0.0...v1.1.0
-[1.0.0]: https://github.com/castlenine/svelte-canvas-confetti/releases/tag/v1.0.0
+[5.2.0]: https://github.com/Castlenine/svelte-canvas-confetti/compare/v5.1.0...v5.2.0
+[5.1.0]: https://github.com/Castlenine/svelte-canvas-confetti/compare/v5.0.2...v5.1.0
+[5.0.2]: https://github.com/Castlenine/svelte-canvas-confetti/compare/v5.0.1...v5.0.2
+[5.0.1]: https://github.com/Castlenine/svelte-canvas-confetti/compare/v5.0.0...v5.0.1
+[5.0.0]: https://github.com/Castlenine/svelte-canvas-confetti/releases/tag/v5.0.0
+[1.2.1]: https://github.com/Castlenine/svelte-canvas-confetti/compare/v1.2.0...v1.2.1
+[1.2.0]: https://github.com/Castlenine/svelte-canvas-confetti/compare/v1.1.0...v1.2.0
+[1.1.0]: https://github.com/Castlenine/svelte-canvas-confetti/compare/v1.0.0...v1.1.0
+[1.0.0]: https://github.com/Castlenine/svelte-canvas-confetti/releases/tag/v1.0.0
