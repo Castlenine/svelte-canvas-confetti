@@ -28,14 +28,14 @@ Whether you are reporting a bug, suggesting a feature, or submitting a pull requ
    pnpm dev:prepare
   ```
 
-   `pnpm dev:prepare` enforces pnpm, runs `svelte-kit sync`, and installs git hooks via Lefthook. Run it once after cloning.
+  `pnpm dev:prepare` enforces pnpm, runs `svelte-kit sync`, and installs git hooks via Lefthook. Run it once after `pnpm install`.
 4. Start the development server:
 
   ```shell
    pnpm dev
   ```
 
-   The demo app will be available at `http://localhost:5173`.
+  The demo app will be available at `http://localhost:5173`.
 
 ## Development Workflow
 
