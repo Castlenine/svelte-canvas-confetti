@@ -153,21 +153,7 @@ You can use images instead of colors by passing `HTMLImageElement` instances to 
 
 The image import path can be placed wherever appropriate in your project, using any alias you prefer (e.g., `$lib/assets/images/`, `$lib/assets/logos/`, `$assets/images/`).
 
-Image particles default to their original dimensions — this is the "auto" behavior. When no `w` or `h` is explicitly set (i.e., `null` or omitted), the particle automatically uses the source image's width and height. To resize them, use the `onCreate` callback to override `w` (width) and `h` (height):
-
-```svelte
-<!-- Set only one dimension — the other auto-scales to preserve aspect ratio -->
-<FallingConfetti
-  styles={[imageLogo]}
-  onCreate={(particle) => ({ ...particle, h: 48 })}
-  onCompleted={() => { showConfetti = false; }} />
-
-<!-- Set both dimensions — exact size, may distort if aspect ratio differs -->
-<FallingConfetti
-  styles={[imageLogo]}
-  onCreate={(particle) => ({ ...particle, w: 32, h: 32 })}
-  onCompleted={() => { showConfetti = false; }} />
-```
+Image particles default to their original dimensions. To resize them, use a config object with `w` and/or `h` in the `styles` array — see [Per-Style Sizing](#per-style-sizing) for full details and examples.
 
 ## Text and Emoji Handling
 
@@ -244,9 +230,33 @@ Use the `color` option to set the fill color for text characters:
 {/if}
 ```
 
+## Per-Style Sizing
+
+Each entry in the `styles` array can optionally be a config object with `w` (width) and/or `h` (height) to control that style's particle dimensions. This works for all style types — colors, images, and text/canvas.
+
+```svelte
+<FallingConfetti
+  styles={[
+    'hotpink',                             // default random size
+    { style: 'gold', w: 20, h: 8 },        // explicit color particle size
+    { style: imageLogo, w: 32, h: 32 },    // resized image (both dimensions)
+    { style: imageLogo, h: 48 },           // height set, width auto-scales aspect ratio
+  ]}
+/>
+```
+
+**Size behavior by style type:**
+
+| Style type | Both `w` and `h` set | Only `w` set | Only `h` set | Neither set |
+| --- | --- | --- | --- | --- |
+| Color string | Exact size | `w` set, `h` random | `h` set, `w` random | Both random (default) |
+| Image / Canvas | Exact size (may distort) | `w` set, `h` auto-scaled (aspect ratio) | `h` set, `w` auto-scaled (aspect ratio) | Original dimensions |
+
+Config objects can be mixed freely with plain styles in the same array. The `onCreate` callback still runs after config sizing and can override any values.
+
 ## Mixing Styles
 
-All style types — color strings, text/emoji (via `createTextStyle`), and images (`HTMLImageElement`) — can be mixed freely in the same `styles` array. Each particle randomly picks one style from the array. Dimensions are handled automatically — no manual sizing is needed. Use `onCreate` to override sizes for any particle when needed.
+All style types — color strings, text/emoji (via `createTextStyle`), and images (`HTMLImageElement`) — can be mixed freely in the same `styles` array. Each particle randomly picks one style from the array. Dimensions are handled automatically — use [Per-Style Sizing](#per-style-sizing) for explicit control.
 
 ```svelte
 <script lang="ts">
@@ -310,29 +320,36 @@ The number of particles to create.
 
 ### styles
 
-A list of styles used to render particles. Can be any valid HTML color, an `HTMLImageElement`, or any `CanvasImageSource` (such as `HTMLCanvasElement` from `createTextStyle`). All types can be mixed in the same array.
+A list of styles used to render particles. Each entry can be a plain style (any valid HTML color, `HTMLImageElement`, or `CanvasImageSource`) or a config object (`{ style, w?, h? }`) for per-style sizing. All types can be mixed in the same array.
 
-**Type:** `readonly ParticleStyle[]`
+**Type:** `readonly ParticleStyleEntry[]`
 **Default value:** `['hotpink', 'gold', 'dodgerblue', 'tomato', 'rebeccapurple', 'lightgreen', 'turquoise']`
 **Example:**
 
 ```svelte
+<!-- Plain styles -->
 <Confetti styles={['red', '#00ff00', 'hsl(120, 65%, 85%)']} />
+
+<!-- Config objects for per-style sizing -->
+<Confetti styles={[{ style: 'red', w: 20, h: 8 }, { style: '#00ff00', w: 12, h: 12 }]} />
 ```
 
 ### onCreate
 
-This can be used to override the properties of each particle at creation time. Useful for controlling particle dimensions (e.g., resizing images) or customizing initial position, velocity, and rotation.
+Override particle properties at creation time. For static sizing, prefer config objects in the `styles` array (see [Per-Style Sizing](#per-style-sizing)). Use `onCreate` for dynamic per-particle logic (e.g., randomizing sizes at runtime, conditional sizing based on position).
 
 **Type:** `(particle) => particle`
 **Default value:** `undefined`
 **Example:**
 
 ```svelte
-<!-- Resize image particles to 32x32 -->
+<!-- Resize a specific style — image auto-scales width to preserve aspect ratio -->
 <Confetti
-  styles={[imageLogo]}
-  onCreate={(particle) => ({ ...particle, w: 32, h: 32 })}
+  styles={['hotpink', imageLogo]}
+  onCreate={(particle) => {
+    if (particle.style === imageLogo) return { ...particle, h: 48 };
+    return particle;
+  }}
 />
 ```
 
@@ -423,13 +440,13 @@ Note: `particleCount` defaults to `40` for this component (not `50`).
 
 In addition to the shared props (`styles`, `particleCount`, `onCreate`, `onUpdate`, `onCompleted`), `ConfettiFireworks` accepts:
 
-| Prop            | Type                        | Default           | Description                                                                       |
-| --------------- | --------------------------- | ----------------- | --------------------------------------------------------------------------------- |
-| `count`         | `number`                    | `3`               | Number of fireworks to launch.                                                    |
-| `rocketStyles`  | `readonly ParticleStyle[]`  | `['whitesmoke']`  | Render styles for the rocket trail particles.                                     |
-| `burstForce`    | `number`                    | `12`              | Burst explosion velocity. Higher values make particles spread faster and further. |
-| `launchForce`   | `number`                    | `25`              | Upward launch velocity of the rocket.                                             |
-| `staggerDelay`  | `number`                    | `400`             | Delay in milliseconds between firework launches.                                  |
+| Prop            | Type                             | Default          | Description                                                                                                                  |
+| --------------- | -------------------------------- | ---------------- | ---------------------------------------------------------------------------------------------------------------------------- |
+| `count`         | `number`                         | `3`              | Number of fireworks to launch.                                                                                               |
+| `rocketStyles`  | `readonly ParticleStyleEntry[]`  | `['whitesmoke']` | Render styles for the rocket trail particles. Config object sizes are overridden by the rocket's fixed 4x4 trail dimensions. |
+| `burstForce`    | `number`                         | `12`             | Burst explosion velocity. Higher values make particles spread faster and further.                                            |
+| `launchForce`   | `number`                         | `25`             | Upward launch velocity of the rocket.                                                                                        |
+| `staggerDelay`  | `number`                         | `400`            | Delay in milliseconds between firework launches.                                                                             |
 
 Note: `particleCount` defaults to `40` for this component (not `50`). The `onCreate` and `onUpdate` callbacks are applied to the burst particles only, not the rockets.
 
@@ -481,6 +498,9 @@ export interface Particle {
 
   // The opacity of the particle (0 to 1). Defaults to 1 (fully opaque).
   opacity?: number;
+
+  // Internal flag. True when w/h were set via a ParticleStyleConfig object.
+  sizeConfigured?: boolean;
 }
 ```
 
@@ -489,19 +509,21 @@ export interface Particle {
 The following types and utilities are exported from the package:
 
 ```typescript
-import type { CreateTextStyleOptions, Particle, ParticleStyle, Position, OnCreateParticle, OnUpdateParticle } from '@castlenine/svelte-canvas-confetti';
+import type { CreateTextStyleOptions, Particle, ParticleStyle, ParticleStyleConfig, ParticleStyleEntry, Position, OnCreateParticle, OnUpdateParticle } from '@castlenine/svelte-canvas-confetti';
 import { createTextStyle } from '@castlenine/svelte-canvas-confetti';
 ```
 
-| Export | Description |
-| --- | --- |
-| `Particle` | The particle object used in `onCreate` and `onUpdate` callbacks. |
-| `ParticleStyle` | `string \| CanvasImageSource` — a valid HTML color, `HTMLImageElement`, `HTMLCanvasElement`, or any canvas image source. |
-| `Position` | `[number, number]` — an `[x, y]` coordinate tuple. |
-| `OnCreateParticle` | `(p: Particle) => Particle` — callback to customize particles at creation. |
-| `OnUpdateParticle` | `(p: Particle, dt: number) => void` — callback to modify particles each frame. |
-| `CreateTextStyleOptions` | Options for `createTextStyle`: `fontSize`, `fontFamily`, `color`. |
-| `createTextStyle` | `(text: string, options?) => HTMLCanvasElement` — renders text/emoji to a canvas for use as a particle style. |
+| Export                   | Description                                                                                                              |
+| ------------------------ | ------------------------------------------------------------------------------------------------------------------------ |
+| `Particle`               | The particle object used in `onCreate` and `onUpdate` callbacks.                                                         |
+| `ParticleStyle`          | `string \| CanvasImageSource` — a valid HTML color, `HTMLImageElement`, `HTMLCanvasElement`, or any canvas image source. |
+| `ParticleStyleConfig`    | `{ style: ParticleStyle, w?: number, h?: number }` — a style with optional per-style size overrides.                     |
+| `ParticleStyleEntry`     | `ParticleStyle \| ParticleStyleConfig` — a plain style or a config object. Used in the `styles` prop.                    |
+| `Position`               | `[number, number]` — an `[x, y]` coordinate tuple.                                                                       |
+| `OnCreateParticle`       | `(p: Particle) => Particle` — callback to customize particles at creation.                                               |
+| `OnUpdateParticle`       | `(p: Particle, dt: number) => void` — callback to modify particles each frame.                                           |
+| `CreateTextStyleOptions` | Options for `createTextStyle`: `fontSize`, `fontFamily`, `color`.                                                        |
+| `createTextStyle`        | `(text: string, options?) => HTMLCanvasElement` — renders text/emoji to a canvas for use as a particle style.            |
 
 ## Development
 

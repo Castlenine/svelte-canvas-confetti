@@ -1,6 +1,14 @@
 export type { CreateTextStyleOptions } from '$lib/utils/create-text-style';
 
-export type { OnCreateParticle, OnUpdateParticle, Particle, ParticleStyle, Position } from '$lib/utils/types';
+export type {
+	OnCreateParticle,
+	OnUpdateParticle,
+	Particle,
+	ParticleStyle,
+	ParticleStyleConfig,
+	ParticleStyleEntry,
+	Position,
+} from '$lib/utils/types';
 
 export { default as Confetti } from '$lib/Confetti.svelte';
 

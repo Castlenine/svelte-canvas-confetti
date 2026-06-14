@@ -6,7 +6,7 @@ All style types can be mixed freely in the same `styles` array. `HTMLCanvasEleme
 
 &nbsp;
 
-@prop styles {readonly ParticleStyle[]} [COLORS] - Render styles for confetti. Each particle gets a random value. Valid HTML colors, HTMLImageElement, or CanvasImageSource. All style types can be mixed.
+@prop styles {readonly ParticleStyleEntry[]} [COLORS] - Render styles for confetti. Each particle gets a random value. Accepts plain styles (HTML colors, HTMLImageElement, CanvasImageSource) or config objects ({ style, w?, h? }) for per-style sizing. All types can be mixed.
 @prop particleCount {number} [50] - Number of particles to create.
 @prop origin {Position} [undefined] - Origin position [x, y]. If omitted, confetti falls from the top.
 @prop force {number} [15] - Burst velocity. Higher = faster/further. No effect without origin.
@@ -18,7 +18,7 @@ All style types can be mixed freely in the same `styles` array. `HTMLCanvasEleme
 -->
 
 <script module lang="ts">
-	import type { OnCreateParticle, OnUpdateParticle, Particle, ParticleStyle, Position } from '$lib/utils/types';
+	import type { OnCreateParticle, OnUpdateParticle, Particle, ParticleStyleEntry, Position } from '$lib/utils/types';
 
 	import { COLORS } from '$lib/utils/constants';
 	import { createParticle, isOutOfBounds, renderParticle, updateParticle } from '$lib/utils/particle';
@@ -70,7 +70,7 @@ All style types can be mixed freely in the same `styles` array. `HTMLCanvasEleme
 		force: number;
 		angle: number;
 		spread: number;
-		styles: readonly ParticleStyle[];
+		styles: readonly ParticleStyleEntry[];
 		onCreate?: OnCreateParticle;
 		onUpdate?: OnUpdateParticle;
 	}
@@ -123,7 +123,7 @@ All style types can be mixed freely in the same `styles` array. `HTMLCanvasEleme
 	import { onMount } from 'svelte';
 
 	interface Props {
-		styles?: readonly ParticleStyle[];
+		styles?: readonly ParticleStyleEntry[];
 		particleCount?: number;
 		origin?: Position;
 		force?: number;

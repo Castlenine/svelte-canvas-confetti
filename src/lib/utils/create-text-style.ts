@@ -24,6 +24,10 @@ function createTextStyle(text: string, options?: CreateTextStyleOptions): HTMLCa
 
 	const { fontSize = 24, fontFamily = 'sans-serif', color } = options ?? {};
 
+	if (!Number.isFinite(fontSize) || fontSize <= 0) {
+		throw new Error('createTextStyle fontSize must be a finite positive number');
+	}
+
 	const CANVAS = document.createElement('canvas');
 	const CONTEXT = CANVAS.getContext('2d');
 

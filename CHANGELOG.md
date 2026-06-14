@@ -5,7 +5,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [5.2.0] - 2026-06-13
+## [5.2.0] - 2026-06-14
 
 ### Added
 
@@ -15,14 +15,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `CreateTextStyleOptions` type export
 - Optional `opacity` property on `Particle` interface for controlling particle transparency
 - `CanvasImageSource` support in `ParticleStyle` type (enables `HTMLCanvasElement`, `ImageBitmap`, etc.)
+- Per-style sizing via `ParticleStyleConfig` objects — each entry in the `styles` array can optionally be `{ style, w?, h? }` to control that style's particle dimensions independently
+- `ParticleStyleConfig` and `ParticleStyleEntry` type exports
+- `sizeConfigured` optional flag on `Particle` interface — internal flag set when `w`/`h` are configured via `ParticleStyleConfig`
 - Auto-sizing of `HTMLCanvasElement` and `HTMLImageElement` particle dimensions in `createParticle` — `createTextStyle` output and images now render at correct size without needing an `onCreate` callback
-- Mixed styles support — all style types (colors, text/emoji, images) can be combined in the same `styles` array
-- Image particles now use `particle.w/h` for rendering, enabling `onCreate`-based image resizing
-- Aspect-ratio auto-correction — setting only `w` or `h` via `onCreate` on image/canvas particles auto-scales the other dimension proportionally
+- Mixed styles support — all style types (colors, text/emoji, images) can be combined in the same `styles` array, including `ParticleStyleConfig` objects for per-style sizing
+- Image particles now use `particle.w/h` for rendering, enabling per-style config or `onCreate`-based image resizing
+- Aspect-ratio auto-correction — setting only `w` or `h` (via config object or `onCreate`) on image/canvas particles auto-scales the other dimension proportionally
 - Added AI Disclosure to `CONTRIBUTING.md` and PR template
 
 ### Changed
 
+- All component `styles` props now accept `readonly ParticleStyleEntry[]` (backward-compatible — plain `ParticleStyle[]` still works)
+- `onCreate` is no longer the recommended way to set particle sizes — per-style config objects are preferred for static sizing; `onCreate` remains for dynamic per-particle logic
 - Widened `ParticleStyle` type from `string | HTMLImageElement` to `string | CanvasImageSource`
 - Unified `renderParticle` — `HTMLImageElement` and `CanvasImageSource` now share the same `drawImage` path using `particle.w/h`
 - Updated `@component` JSDoc in `ConfettiBurst`, `ConfettiCannon`, and `FallingConfetti` to document `CanvasImageSource` style support
@@ -39,7 +44,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `StylePicker` control with color presets, custom colors, emoji presets, custom text, and image upload — all style types can be mixed freely
 - Separate font size inputs for emoji presets and custom text in `StylePicker` (12–64px)
 - Text color picker for custom text in `StylePicker` — each text entry can have its own fill color
-- Per-image width/height controls in `StylePicker` with "auto" option for aspect-ratio-preserving resizing
+- Per-style width/height controls in `StylePicker` for all entry types (colors, emoji, images) with "auto" option — uses `ParticleStyleConfig` objects instead of canvas pre-rendering
+- Removed global particle width/height overrides from demo — replaced by per-style sizing in `StylePicker`
+- Code example viewer generates `{ style, w, h }` config object syntax for per-style sizing
 - Fixed blob URL memory leak on image removal in `StylePicker`
 - Dynamic code example viewer with syntax highlighting and copy button — updates reactively as controls change
 - Dark theme redesign

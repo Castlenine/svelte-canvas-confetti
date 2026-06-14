@@ -4,10 +4,10 @@ Fireworks confetti effect. Launches rocket particles upward that explode into co
 
 &nbsp;
 
-@prop styles {readonly ParticleStyle[]} [undefined] - Render styles for burst confetti. Valid HTML colors, HTMLImageElement, or CanvasImageSource.
+@prop styles {readonly ParticleStyleEntry[]} [undefined] - Render styles for burst confetti. Accepts plain styles (HTML colors, HTMLImageElement, CanvasImageSource) or config objects ({ style, w?, h? }) for per-style sizing.
 @prop count {number} [3] - Number of fireworks to launch.
 @prop particleCount {number} [40] - Number of particles per burst explosion.
-@prop rocketStyles {readonly ParticleStyle[]} [['whitesmoke']] - Render styles for rocket trail particles.
+@prop rocketStyles {readonly ParticleStyleEntry[]} [['whitesmoke']] - Render styles for rocket trail particles. Config object sizes are overridden by the rocket's fixed 4x4 trail dimensions.
 @prop burstForce {number} [12] - Burst explosion velocity. Higher = faster/further.
 @prop launchForce {number} [25] - Upward launch velocity of the rocket.
 @prop staggerDelay {number} [400] - Delay in milliseconds between firework launches.
@@ -17,7 +17,7 @@ Fireworks confetti effect. Launches rocket particles upward that explode into co
 -->
 
 <script lang="ts">
-	import type { OnCreateParticle, OnUpdateParticle, Particle, ParticleStyle, Position } from '$lib/utils/types';
+	import type { OnCreateParticle, OnUpdateParticle, Particle, ParticleStyleEntry, Position } from '$lib/utils/types';
 
 	import { onMount } from 'svelte';
 
@@ -34,10 +34,10 @@ Fireworks confetti effect. Launches rocket particles upward that explode into co
 	}
 
 	interface Props {
-		styles?: readonly ParticleStyle[];
+		styles?: readonly ParticleStyleEntry[];
 		count?: number;
 		particleCount?: number;
-		rocketStyles?: readonly ParticleStyle[];
+		rocketStyles?: readonly ParticleStyleEntry[];
 		burstForce?: number;
 		launchForce?: number;
 		staggerDelay?: number;
@@ -50,7 +50,7 @@ Fireworks confetti effect. Launches rocket particles upward that explode into co
 		styles = undefined,
 		count = 3,
 		particleCount = 40,
-		rocketStyles = ['whitesmoke'] as readonly ParticleStyle[],
+		rocketStyles = ['whitesmoke'] as readonly ParticleStyleEntry[],
 		burstForce = 12,
 		launchForce = 25,
 		staggerDelay = 400,

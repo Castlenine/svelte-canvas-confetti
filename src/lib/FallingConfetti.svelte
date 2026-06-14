@@ -4,7 +4,7 @@ Falling confetti effect. Particles spawn along the top edge of the viewport and 
 
 &nbsp;
 
-@prop styles {readonly ParticleStyle[]} [undefined] - Render styles for confetti. Valid HTML colors, HTMLImageElement, or CanvasImageSource.
+@prop styles {readonly ParticleStyleEntry[]} [undefined] - Render styles for confetti. Accepts plain styles (HTML colors, HTMLImageElement, CanvasImageSource) or config objects ({ style, w?, h? }) for per-style sizing.
 @prop particleCount {number} [50] - Number of particles to create.
 @prop onCreate {OnCreateParticle} [undefined] - Callback to override initial particle values at creation time.
 @prop onUpdate {OnUpdateParticle} [undefined] - Callback called each frame per particle for custom animation logic.
@@ -12,12 +12,12 @@ Falling confetti effect. Particles spawn along the top edge of the viewport and 
 -->
 
 <script lang="ts">
-	import type { OnCreateParticle, OnUpdateParticle, ParticleStyle } from '$lib/utils/types';
+	import type { OnCreateParticle, OnUpdateParticle, ParticleStyleEntry } from '$lib/utils/types';
 
 	import Confetti from '$lib/Confetti.svelte';
 
 	interface Props {
-		styles?: readonly ParticleStyle[];
+		styles?: readonly ParticleStyleEntry[];
 		particleCount?: number;
 		onCreate?: OnCreateParticle;
 		onUpdate?: OnUpdateParticle;

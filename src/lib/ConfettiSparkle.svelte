@@ -4,7 +4,7 @@ Sparkle confetti effect. Particles appear at random positions across a defined a
 
 &nbsp;
 
-@prop styles {readonly ParticleStyle[]} [undefined] - Render styles for confetti. Valid HTML colors, HTMLImageElement, or CanvasImageSource.
+@prop styles {readonly ParticleStyleEntry[]} [undefined] - Render styles for confetti. Accepts plain styles (HTML colors, HTMLImageElement, CanvasImageSource) or config objects ({ style, w?, h? }) for per-style sizing.
 @prop particleCount {number} [40] - Number of sparkle particles to create.
 @prop duration {number} [3] - Total effect duration in seconds.
 @prop area {Position} [undefined] - [width, height] of the spawn area. Defaults to full viewport.
@@ -16,13 +16,13 @@ Sparkle confetti effect. Particles appear at random positions across a defined a
 -->
 
 <script lang="ts">
-	import type { OnCreateParticle, OnUpdateParticle, Particle, ParticleStyle, Position } from '$lib/utils/types';
+	import type { OnCreateParticle, OnUpdateParticle, Particle, ParticleStyleEntry, Position } from '$lib/utils/types';
 
 	import Confetti from '$lib/Confetti.svelte';
 	import { random } from '$lib/utils/random';
 
 	interface Props {
-		styles?: readonly ParticleStyle[];
+		styles?: readonly ParticleStyleEntry[];
 		particleCount?: number;
 		duration?: number;
 		area?: Position;
@@ -49,7 +49,8 @@ Sparkle confetti effect. Particles appear at random positions across a defined a
 		const SPAWN_AREA_W = area ? area[0] : window.innerWidth;
 		const SPAWN_AREA_H = area ? area[1] : window.innerHeight;
 		const STAGGER_WINDOW = duration * 0.6;
-		const IS_SIZED_STYLE = p.style instanceof HTMLCanvasElement || p.style instanceof HTMLImageElement;
+		const HAS_EXPLICIT_SIZE =
+			p.style instanceof HTMLCanvasElement || p.style instanceof HTMLImageElement || p.sizeConfigured;
 
 		let particle: Particle = {
 			...p,
@@ -62,8 +63,8 @@ Sparkle confetti effect. Particles appear at random positions across a defined a
 			da: random(15, -15),
 			delay: random(STAGGER_WINDOW),
 			opacity: 0,
-			w: IS_SIZED_STYLE ? p.w : random(8, 3),
-			h: IS_SIZED_STYLE ? p.h : random(8, 3),
+			w: HAS_EXPLICIT_SIZE ? p.w : random(8, 3),
+			h: HAS_EXPLICIT_SIZE ? p.h : random(8, 3),
 		};
 
 		if (onCreate) particle = onCreate(particle);

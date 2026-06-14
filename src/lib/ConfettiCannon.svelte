@@ -5,7 +5,7 @@ Confetti cannon effect. Fires particles from an origin point in a directed cone 
 &nbsp;
 
 @prop origin {Position} - Origin position [x, y] of the confetti cannon. Required.
-@prop styles {readonly ParticleStyle[]} [undefined] - Render styles for confetti. Valid HTML colors, HTMLImageElement, or CanvasImageSource.
+@prop styles {readonly ParticleStyleEntry[]} [undefined] - Render styles for confetti. Accepts plain styles (HTML colors, HTMLImageElement, CanvasImageSource) or config objects ({ style, w?, h? }) for per-style sizing.
 @prop particleCount {number} [50] - Number of particles to create.
 @prop force {number} [15] - Burst velocity. Higher = faster/further.
 @prop angle {number} [-90] - Burst direction in degrees. Use with spread for directed bursts.
@@ -16,13 +16,13 @@ Confetti cannon effect. Fires particles from an origin point in a directed cone 
 -->
 
 <script lang="ts">
-	import type { OnCreateParticle, OnUpdateParticle, ParticleStyle, Position } from '$lib/utils/types';
+	import type { OnCreateParticle, OnUpdateParticle, ParticleStyleEntry, Position } from '$lib/utils/types';
 
 	import Confetti from '$lib/Confetti.svelte';
 
 	interface Props {
 		origin: Position;
-		styles?: readonly ParticleStyle[];
+		styles?: readonly ParticleStyleEntry[];
 		particleCount?: number;
 		force?: number;
 		angle?: number;
