@@ -6,7 +6,7 @@ and configure all props interactively.
 
 <script lang="ts">
 	import type { Particle } from '$lib';
-	import type { ParticleStyle, Position } from '$lib/utils/types';
+	import type { ParticleStyleEntry, Position } from '$lib/utils/types';
 
 	import { onMount } from 'svelte';
 
@@ -31,21 +31,23 @@ and configure all props interactively.
 	let activeTab = $state<TabKey>('falling');
 
 	let particleCount = $state(50);
-	let styles: ParticleStyle[] = $state([]);
+	let styles: ParticleStyleEntry[] = $state([]);
 	let styleMetadata: {
-		type: 'color' | 'emoji' | 'image';
+		type: 'color' | 'emoji' | 'text' | 'image';
 		label: string;
 		fontSize?: number;
 		textColor?: string;
-		imageWidth?: number | null;
-		imageHeight?: number | null;
+		w?: number | null;
+		h?: number | null;
 	}[] = $state([]);
-	let emojiStyles: ParticleStyle[] = $state([]);
+	let emojiStyles: ParticleStyleEntry[] = $state([]);
 	let emojiStyleMetadata: {
-		type: 'color' | 'emoji' | 'image';
+		type: 'color' | 'emoji' | 'text' | 'image';
 		label: string;
 		fontSize?: number;
 		textColor?: string;
+		w?: number | null;
+		h?: number | null;
 	}[] = $state([]);
 	let parachuteImg: HTMLImageElement | null = $state(null);
 
@@ -69,8 +71,6 @@ and configure all props interactively.
 
 	let emojiOrigin: Position = $state([0, 0]);
 
-	let particleWidth: number | null = $state(null);
-	let particleHeight: number | null = $state(null);
 	let particleGravity: number | null = $state(null);
 	let particleOpacity: number | null = $state(null);
 	let particleSway: number | null = $state(null);
@@ -80,7 +80,7 @@ and configure all props interactively.
 	interface ConfettiInstance {
 		id: number;
 		particleCount: number;
-		styles: readonly ParticleStyle[];
+		styles: readonly ParticleStyleEntry[];
 		onCreate?: (p: Particle) => Particle;
 	}
 
@@ -100,15 +100,12 @@ and configure all props interactively.
 		burstForce: number;
 		launchForce: number;
 		staggerDelay: number;
-		rocketStyles: readonly ParticleStyle[];
+		rocketStyles: readonly ParticleStyleEntry[];
 	})[] = $state([]);
 	let parachuteInstances: { id: number; particleCount: number }[] = $state([]);
 	let emojiBurstInstances: (ConfettiInstance & { origin: Position })[] = $state([]);
 
 	const IS_MAIN_EFFECT = $derived(activeTab !== 'parachutes' && activeTab !== 'emoji');
-	const HAS_COLOR_STYLES = $derived(
-		activeTab === 'emoji' ? false : styleMetadata.some((entry) => entry.type === 'color'),
-	);
 
 	const IS_FIRE_DISABLED = $derived.by(() => {
 		if (activeTab === 'parachutes') return parachuteImg == null;
@@ -161,16 +158,13 @@ and configure all props interactively.
 	}
 
 	function buildParticleOnCreate(): ((p: Particle) => Particle) | undefined {
-		const WIDTH = particleWidth;
-		const HEIGHT = particleHeight;
 		const GY = particleGravity;
 		const OP = particleOpacity;
 		const XW = particleSway;
 		const DA = particleRotation;
 		const DL = particleDelay;
 
-		const HAS_ANY_OVERRIDE =
-			WIDTH != null || HEIGHT != null || GY != null || OP != null || XW != null || DA != null || DL != null;
+		const HAS_ANY_OVERRIDE = GY != null || OP != null || XW != null || DA != null || DL != null;
 
 		if (!HAS_ANY_OVERRIDE) {
 			return undefined;
@@ -178,8 +172,6 @@ and configure all props interactively.
 
 		return (p: Particle): Particle => ({
 			...p,
-			...(WIDTH != null && { w: WIDTH }),
-			...(HEIGHT != null && { h: HEIGHT }),
 			...(GY != null && { gy: GY }),
 			...(OP != null && { opacity: OP }),
 			...(XW != null && { xw: XW }),
@@ -302,14 +294,6 @@ and configure all props interactively.
 
 	function handleEmojiBurstCompleted(id: number): void {
 		emojiBurstInstances = emojiBurstInstances.filter((i) => i.id !== id);
-	}
-
-	function handleParticleWidthChange(event: Event): void {
-		particleWidth = clampParticleValue((event.target as HTMLInputElement).value, 1, 64);
-	}
-
-	function handleParticleHeightChange(event: Event): void {
-		particleHeight = clampParticleValue((event.target as HTMLInputElement).value, 1, 64);
 	}
 
 	function handleParticleGravityChange(event: Event): void {
@@ -487,26 +471,6 @@ and configure all props interactively.
 			<div class="particle-props">
 				<span class="particle-props-label">Particle Properties</span>
 				<div class="particle-props-grid">
-					{#if HAS_COLOR_STYLES}
-						<label class="particle-prop-item">
-							<span class="particle-prop-name">Width</span>
-							<input
-								class="particle-prop-input"
-								value={particleWidth ?? 'default'}
-								type="text"
-								placeholder="default"
-								onchange={handleParticleWidthChange} />
-						</label>
-						<label class="particle-prop-item">
-							<span class="particle-prop-name">Height</span>
-							<input
-								class="particle-prop-input"
-								value={particleHeight ?? 'default'}
-								type="text"
-								placeholder="default"
-								onchange={handleParticleHeightChange} />
-						</label>
-					{/if}
 					<label class="particle-prop-item">
 						<span class="particle-prop-name">Gravity</span>
 						<input
@@ -580,11 +544,9 @@ and configure all props interactively.
 		{particleCount}
 		{particleDelay}
 		{particleGravity}
-		{particleHeight}
 		{particleOpacity}
 		{particleRotation}
 		{particleSway}
-		{particleWidth}
 		{sparkleArea}
 		{sparkleAreaOrigin}
 		{sparkleDuration}

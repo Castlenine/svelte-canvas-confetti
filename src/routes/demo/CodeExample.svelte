@@ -7,8 +7,8 @@ showing how to use the currently configured effect, with syntax highlighting and
 
 @prop activeTab {'falling' | 'burst' | 'cannon' | 'sparkle' | 'fireworks' | 'parachutes' | 'emoji'} - Currently active demo effect tab.
 @prop particleCount {number} - Number of particles.
-@prop styleMetadata {readonly { type: string; label: string; fontSize?: number; textColor?: string; imageWidth?: number | null; imageHeight?: number | null }[]} - Metadata for active particle styles from StylePicker.
-@prop emojiStyleMetadata {readonly { type: string; label: string; fontSize?: number; textColor?: string }[]} - Metadata for emoji tab styles from StylePicker.
+@prop styleMetadata {readonly StyleMeta[]} - Metadata for active particle styles from StylePicker (type, label, fontSize, textColor, w, h).
+@prop emojiStyleMetadata {readonly EmojiStyleMeta[]} - Metadata for emoji tab styles from StylePicker.
 @prop burstOrigin {Position} - Origin point for burst effect.
 @prop sparkleDuration {number} - Duration in seconds for sparkle effect.
 @prop sparkleSpeed {number} - Speed multiplier for sparkle effect.
@@ -24,8 +24,6 @@ showing how to use the currently configured effect, with syntax highlighting and
 @prop cannonForce {number} - Launch force for cannon effect.
 @prop cannonAngle {number} - Launch angle in degrees for cannon effect.
 @prop cannonSpread {number} - Spread angle in degrees for cannon effect.
-@prop particleWidth {number | null} - Particle width override (null = auto).
-@prop particleHeight {number | null} - Particle height override (null = auto).
 @prop particleGravity {number | null} - Particle gravity override (null = auto).
 @prop particleOpacity {number | null} - Particle opacity override (null = auto).
 @prop particleSway {number | null} - Particle sway/wind override (null = auto).
@@ -42,8 +40,8 @@ showing how to use the currently configured effect, with syntax highlighting and
 		fontSize?: number;
 		fontFamily?: string;
 		textColor?: string;
-		imageWidth?: number | null;
-		imageHeight?: number | null;
+		w?: number | null;
+		h?: number | null;
 	}
 
 	interface EmojiStyleMeta {
@@ -52,6 +50,8 @@ showing how to use the currently configured effect, with syntax highlighting and
 		fontSize?: number;
 		fontFamily?: string;
 		textColor?: string;
+		w?: number | null;
+		h?: number | null;
 	}
 
 	interface Props {
@@ -70,8 +70,6 @@ showing how to use the currently configured effect, with syntax highlighting and
 		fireworkStaggerDelay: number;
 		fireworkRocketColor: string;
 		emojiOrigin: Position;
-		particleWidth: number | null;
-		particleHeight: number | null;
 		particleGravity: number | null;
 		particleOpacity: number | null;
 		particleSway: number | null;
@@ -99,8 +97,6 @@ showing how to use the currently configured effect, with syntax highlighting and
 		fireworkStaggerDelay,
 		fireworkRocketColor,
 		emojiOrigin,
-		particleWidth,
-		particleHeight,
 		particleGravity,
 		particleOpacity,
 		particleSway,
@@ -134,7 +130,6 @@ showing how to use the currently configured effect, with syntax highlighting and
 		setupCode: string;
 		stylesExpr: string;
 		hasAsync: boolean;
-		onCreateCode: string;
 	}
 
 	function formatPosition(position: Position): string {
@@ -163,25 +158,38 @@ showing how to use the currently configured effect, with syntax highlighting and
 	function isDefaultStyles(entries: readonly StyleMeta[]): boolean {
 		if (entries.length !== DEFAULT_COLORS.length) return false;
 
-		return entries.every((entry, index) => entry.type === 'color' && entry.label === DEFAULT_COLORS[index]);
+		return entries.every(
+			(entry, index) =>
+				entry.type === 'color' && entry.label === DEFAULT_COLORS[index] && entry.w == null && entry.h == null,
+		);
+	}
+
+	function formatStyleItem(rawExpr: string, entry: StyleMeta): string {
+		if (entry.w == null && entry.h == null) return rawExpr;
+
+		const DIMS_PARTS: string[] = [];
+
+		if (entry.w != null) DIMS_PARTS.push(`w: ${entry.w}`);
+		if (entry.h != null) DIMS_PARTS.push(`h: ${entry.h}`);
+
+		return `{ style: ${rawExpr}, ${DIMS_PARTS.join(', ')} }`;
 	}
 
 	function formatStyleMetadata(entries: readonly StyleMeta[]): FormattedStyleResult {
 		const COLORS = entries.filter((entry) => entry.type === 'color');
-		const EMOJIS = entries.filter((entry) => entry.type === 'emoji');
+		const EMOJIS = entries.filter((entry) => entry.type === 'emoji' || entry.type === 'text');
 		const IMAGES = entries.filter((entry) => entry.type === 'image');
 
 		const IS_COLORS_ONLY = EMOJIS.length === 0 && IMAGES.length === 0;
 
 		if (IS_COLORS_ONLY) {
-			const ITEMS = COLORS.map((entry) => `'${entry.label}'`).join(', ');
+			const ITEMS = COLORS.map((entry) => formatStyleItem(`'${entry.label}'`, entry)).join(', ');
 
 			return {
 				imports: [],
 				setupCode: '',
 				stylesExpr: `[${ITEMS}]`,
 				hasAsync: false,
-				onCreateCode: '',
 			};
 		}
 
@@ -189,23 +197,19 @@ showing how to use the currently configured effect, with syntax highlighting and
 		const STYLE_ITEMS: string[] = [];
 		const SETUP_LINES: string[] = [];
 		let hasAsync = false;
-		const ON_CREATE_DIMS: { w?: number; h?: number } = {};
 
-		// Colors as inline strings
 		COLORS.forEach((entry) => {
-			STYLE_ITEMS.push(`'${entry.label}'`);
+			STYLE_ITEMS.push(formatStyleItem(`'${entry.label}'`, entry));
 		});
 
-		// Emoji/text entries need createTextStyle
 		if (EMOJIS.length > 0) {
 			IMPORTS.push('createTextStyle');
 
 			EMOJIS.forEach((entry) => {
-				STYLE_ITEMS.push(formatTextStyleCall(entry));
+				STYLE_ITEMS.push(formatStyleItem(formatTextStyleCall(entry), entry));
 			});
 		}
 
-		// Image entries need onMount + Image loading
 		if (IMAGES.length > 0) {
 			hasAsync = true;
 
@@ -226,30 +230,11 @@ showing how to use the currently configured effect, with syntax highlighting and
 				SETUP_LINES.push(`    const ${VAR_NAME} = new Image();`);
 				SETUP_LINES.push(`    ${VAR_NAME}.src = 'path/to/${entry.label}';`);
 				SETUP_LINES.push(`    await ${VAR_NAME}.decode();`);
-				STYLE_ITEMS.push(VAR_NAME);
-
-				// Capture custom dimensions from the first image with overrides
-				if (entry.imageWidth != null && ON_CREATE_DIMS.w == null) {
-					ON_CREATE_DIMS.w = entry.imageWidth;
-				}
-
-				if (entry.imageHeight != null && ON_CREATE_DIMS.h == null) {
-					ON_CREATE_DIMS.h = entry.imageHeight;
-				}
+				STYLE_ITEMS.push(formatStyleItem(VAR_NAME, entry));
 			});
 		}
 
 		const STYLES_ARRAY = `[${STYLE_ITEMS.join(', ')}]`;
-		let onCreateCode = '';
-
-		if (ON_CREATE_DIMS.w != null || ON_CREATE_DIMS.h != null) {
-			const DIMS_PARTS: string[] = [];
-
-			if (ON_CREATE_DIMS.w != null) DIMS_PARTS.push(`w: ${ON_CREATE_DIMS.w}`);
-			if (ON_CREATE_DIMS.h != null) DIMS_PARTS.push(`h: ${ON_CREATE_DIMS.h}`);
-
-			onCreateCode = `onCreate={(p) => ({ ...p, ${DIMS_PARTS.join(', ')} })}`;
-		}
 
 		if (hasAsync) {
 			return {
@@ -257,7 +242,6 @@ showing how to use the currently configured effect, with syntax highlighting and
 				setupCode: SETUP_LINES.join('\n'),
 				stylesExpr: STYLES_ARRAY,
 				hasAsync: true,
-				onCreateCode,
 			};
 		}
 
@@ -266,15 +250,12 @@ showing how to use the currently configured effect, with syntax highlighting and
 			setupCode: '',
 			stylesExpr: STYLES_ARRAY,
 			hasAsync: false,
-			onCreateCode,
 		};
 	}
 
 	function formatParticleOnCreate(): string {
 		const PARTS: string[] = [];
 
-		if (particleWidth != null) PARTS.push(`w: ${particleWidth}`);
-		if (particleHeight != null) PARTS.push(`h: ${particleHeight}`);
 		if (particleGravity != null) PARTS.push(`gy: ${particleGravity}`);
 		if (particleOpacity != null) PARTS.push(`opacity: ${particleOpacity}`);
 		if (particleSway != null) PARTS.push(`xw: ${particleSway}`);
@@ -284,14 +265,6 @@ showing how to use the currently configured effect, with syntax highlighting and
 		if (PARTS.length === 0) return '';
 
 		return `onCreate={(p) => ({ ...p, ${PARTS.join(', ')} })}`;
-	}
-
-	function mergeOnCreateCodes(imageOnCreate: string, particleOnCreate: string): string {
-		if (imageOnCreate === '' && particleOnCreate === '') return '';
-		if (imageOnCreate === '') return particleOnCreate;
-		if (particleOnCreate === '') return imageOnCreate;
-
-		return particleOnCreate;
 	}
 
 	function generateCode(): string {
@@ -324,15 +297,14 @@ showing how to use the currently configured effect, with syntax highlighting and
 
 	function buildEffectCode(componentName: string, componentImportName: string, extraProps: string[]): string {
 		const RESULT = formatStyleMetadata(styleMetadata);
-		const PARTICLE_ON_CREATE = formatParticleOnCreate();
-		const MERGED_ON_CREATE = mergeOnCreateCodes(RESULT.onCreateCode, PARTICLE_ON_CREATE);
+		const ON_CREATE = formatParticleOnCreate();
 		const HAS_SETUP = RESULT.hasAsync || RESULT.imports.length > 0;
 
 		if (!HAS_SETUP) {
 			const PROPS: string[] = [...extraProps];
 
 			if (!isDefaultStyles(styleMetadata) && RESULT.stylesExpr !== '[]') PROPS.push(`  styles={${RESULT.stylesExpr}}`);
-			if (MERGED_ON_CREATE !== '') PROPS.push(`  ${MERGED_ON_CREATE}`);
+			if (ON_CREATE !== '') PROPS.push(`  ${ON_CREATE}`);
 
 			const PROPS_BLOCK = PROPS.length > 0 ? `\n${PROPS.join('\n')}\n` : ' ';
 
@@ -355,7 +327,7 @@ showing how to use the currently configured effect, with syntax highlighting and
 
 		COMPONENT_PROPS.push(`  styles={confettiStyles}`);
 
-		if (MERGED_ON_CREATE !== '') COMPONENT_PROPS.push(`  ${MERGED_ON_CREATE}`);
+		if (ON_CREATE !== '') COMPONENT_PROPS.push(`  ${ON_CREATE}`);
 
 		const SETUP_BODY = RESULT.setupCode === '' ? '\n' : `\n${RESULT.setupCode}\n`;
 
@@ -463,7 +435,9 @@ ${COMPONENT_PROPS.join('\n')}
 	}
 
 	function generateEmojiCode(): string {
-		const STYLE_CALLS = emojiStyleMetadata.map((entry) => `      ${formatTextStyleCall(entry)},`).join('\n');
+		const STYLE_CALLS = emojiStyleMetadata
+			.map((entry) => `      ${formatStyleItem(formatTextStyleCall(entry), entry)},`)
+			.join('\n');
 
 		const PARTICLE_ON_CREATE = formatParticleOnCreate();
 		const ON_CREATE_LINE = PARTICLE_ON_CREATE === '' ? '' : `\n  ${PARTICLE_ON_CREATE}`;

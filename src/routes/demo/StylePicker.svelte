@@ -2,42 +2,41 @@
 @component
 Style picker for selecting confetti particle styles. Supports color presets, custom colors,
 emoji presets with independent size control, and custom text input with independent size and color controls.
-Also supports image uploads with per-image width/height controls. All style types (colors,
-emoji, text, images) can be mixed freely. Outputs an array of ParticleStyle values for use
-with confetti components.
+Also supports image uploads. All style types (colors, emoji, text, images) can be mixed freely
+and each entry supports optional per-style width/height overrides. Outputs an array of
+ParticleStyleEntry values for use with confetti components.
 
 &nbsp;
 
-@prop styles {ParticleStyle[]} $bindable - Active particle styles array synced to parent.
-@prop styleMetadata {readonly StyleEntryMeta[]} $bindable - Per-entry metadata for code generation (type, label, fontSize, textColor, image dimensions).
+@prop styles {ParticleStyleEntry[]} $bindable - Active particle style entries array synced to parent.
+@prop styleMetadata {readonly StyleEntryMeta[]} $bindable - Per-entry metadata for code generation (type, label, fontSize, textColor, w, h).
 @prop mode {'all' | 'colors' | 'emoji'} ['all'] - Controls which picker sections are visible.
 @prop label {string} ['Styles'] - Display label for the picker.
 -->
 
 <script lang="ts">
-	import type { ParticleStyle } from '$lib/utils/types';
+	import type { ParticleStyle, ParticleStyleEntry } from '$lib/utils/types';
 
 	import { onMount } from 'svelte';
 
 	import { createTextStyle } from '$lib/utils/create-text-style';
 
 	interface StyleEntryMeta {
-		type: 'color' | 'emoji' | 'image';
+		type: 'color' | 'emoji' | 'text' | 'image';
 		label: string;
 		fontSize?: number;
 		fontFamily?: string;
 		textColor?: string;
-		imageWidth?: number | null;
-		imageHeight?: number | null;
+		w?: number | null;
+		h?: number | null;
 	}
 
 	interface StyleEntry extends StyleEntryMeta {
 		style: ParticleStyle;
-		originalImage?: HTMLImageElement;
 	}
 
 	interface Props {
-		styles: ParticleStyle[];
+		styles: ParticleStyleEntry[];
 		styleMetadata?: StyleEntryMeta[];
 		mode?: 'all' | 'colors' | 'emoji';
 		label?: string;
@@ -140,24 +139,13 @@ with confetti components.
 			{
 				style: CANVAS,
 				label: TRIMMED,
-				type: 'emoji',
+				type: 'text',
 				fontSize: textSize,
 				fontFamily: customFontFamily,
 				textColor: customTextColor,
 			},
 		];
 		customEmoji = '';
-	}
-
-	function createSizedImageCanvas(image: HTMLImageElement, width: number, height: number): HTMLCanvasElement {
-		const CANVAS = document.createElement('canvas');
-		CANVAS.width = width;
-		CANVAS.height = height;
-		const CONTEXT = CANVAS.getContext('2d');
-
-		if (CONTEXT) CONTEXT.drawImage(image, 0, 0, width, height);
-
-		return CANVAS;
 	}
 
 	function handleFileUpload(event: Event): void {
@@ -179,9 +167,8 @@ with confetti components.
 					style: IMAGE,
 					label: FILE.name,
 					type: 'image',
-					originalImage: IMAGE,
-					imageWidth: null,
-					imageHeight: null,
+					w: null,
+					h: null,
 				},
 			];
 		});
@@ -189,37 +176,7 @@ with confetti components.
 		TARGET.value = '';
 	}
 
-	function resolveImageDimensions(
-		image: HTMLImageElement,
-		width: number | null,
-		height: number | null,
-	): [number, number] {
-		const ASPECT = image.width / image.height;
-
-		if (width != null && height != null) return [width, height];
-		if (width != null) return [width, Math.round(width / ASPECT)];
-		if (height != null) return [Math.round(height * ASPECT), height];
-
-		return [image.width, image.height];
-	}
-
-	function handleImageResize(index: number, width: number | null, height: number | null): void {
-		const ENTRY = entries[index];
-
-		if (ENTRY.type !== 'image' || !(ENTRY.originalImage instanceof HTMLImageElement)) return;
-
-		const [RESOLVED_W, RESOLVED_H] = resolveImageDimensions(ENTRY.originalImage, width, height);
-		const IS_ORIGINAL = RESOLVED_W === ENTRY.originalImage.width && RESOLVED_H === ENTRY.originalImage.height;
-		const STYLE = IS_ORIGINAL
-			? ENTRY.originalImage
-			: createSizedImageCanvas(ENTRY.originalImage, RESOLVED_W, RESOLVED_H);
-
-		entries = entries.map((entry, entryIndex) =>
-			entryIndex === index ? { ...entry, style: STYLE, imageWidth: width, imageHeight: height } : entry,
-		);
-	}
-
-	function parseImageDimension(rawValue: string): number | null {
+	function parseDimension(rawValue: string): number | null {
 		if (rawValue === '' || rawValue.toLowerCase() === 'auto') return null;
 
 		const PARSED = Number(rawValue);
@@ -229,21 +186,68 @@ with confetti components.
 		return Math.min(512, Math.round(PARSED));
 	}
 
-	function handleImageWidthChange(index: number, rawValue: string): void {
-		const WIDTH = parseImageDimension(rawValue);
-		handleImageResize(index, WIDTH, entries[index].imageHeight ?? null);
+	function handleWidthChange(index: number, rawValue: string): void {
+		const WIDTH = parseDimension(rawValue);
+		entries = entries.map((entry, entryIndex) => (entryIndex === index ? { ...entry, w: WIDTH } : entry));
 	}
 
-	function handleImageHeightChange(index: number, rawValue: string): void {
-		const HEIGHT = parseImageDimension(rawValue);
-		handleImageResize(index, entries[index].imageWidth ?? null, HEIGHT);
+	function handleHeightChange(index: number, rawValue: string): void {
+		const HEIGHT = parseDimension(rawValue);
+		entries = entries.map((entry, entryIndex) => (entryIndex === index ? { ...entry, h: HEIGHT } : entry));
+	}
+
+	function handleEntryFontSizeChange(index: number, rawValue: string): void {
+		const PARSED = Number(rawValue);
+
+		if (Number.isNaN(PARSED) || PARSED < 12 || PARSED > 64) return;
+
+		const SIZE = Math.round(PARSED);
+		entries = entries.map((entry, entryIndex) => {
+			if (entryIndex !== index) return entry;
+
+			const TEXT = entry.label;
+			const OPTIONS =
+				entry.type === 'text'
+					? { fontSize: SIZE, fontFamily: entry.fontFamily, color: entry.textColor }
+					: { fontSize: SIZE };
+
+			return { ...entry, style: createTextStyle(TEXT, OPTIONS), fontSize: SIZE };
+		});
+	}
+
+	function handleEntryTextColorChange(index: number, newColor: string): void {
+		entries = entries.map((entry, entryIndex) => {
+			if (entryIndex !== index || entry.type !== 'text') return entry;
+
+			const CANVAS = createTextStyle(entry.label, {
+				fontSize: entry.fontSize ?? DEFAULT_FONT_SIZE,
+				fontFamily: entry.fontFamily,
+				color: newColor,
+			});
+
+			return { ...entry, style: CANVAS, textColor: newColor };
+		});
+	}
+
+	function handleEntryFontFamilyChange(index: number, newFamily: string): void {
+		entries = entries.map((entry, entryIndex) => {
+			if (entryIndex !== index || entry.type !== 'text') return entry;
+
+			const CANVAS = createTextStyle(entry.label, {
+				fontSize: entry.fontSize ?? DEFAULT_FONT_SIZE,
+				fontFamily: newFamily,
+				color: entry.textColor,
+			});
+
+			return { ...entry, style: CANVAS, fontFamily: newFamily };
+		});
 	}
 
 	function handleRemoveEntry(index: number): void {
 		const ENTRY = entries[index];
 
-		if (ENTRY.type === 'image' && ENTRY.originalImage instanceof HTMLImageElement) {
-			URL.revokeObjectURL(ENTRY.originalImage.src);
+		if (ENTRY.type === 'image' && ENTRY.style instanceof HTMLImageElement) {
+			URL.revokeObjectURL(ENTRY.style.src);
 		}
 
 		entries = entries.filter((_, entryIndex) => entryIndex !== index);
@@ -267,15 +271,22 @@ with confetti components.
 	}
 
 	$effect(() => {
-		styles = entries.map((entry) => entry.style);
-		styleMetadata = entries.map(({ type, label, fontSize, fontFamily, textColor, imageWidth, imageHeight }) => ({
+		styles = entries.map((entry) => {
+			if (entry.w != null || entry.h != null) {
+				return { style: entry.style, w: entry.w ?? undefined, h: entry.h ?? undefined };
+			}
+
+			return entry.style;
+		});
+
+		styleMetadata = entries.map(({ type, label, fontSize, fontFamily, textColor, w, h }) => ({
 			type,
 			label,
 			fontSize,
 			fontFamily,
 			textColor,
-			imageWidth,
-			imageHeight,
+			w,
+			h,
 		}));
 	});
 
@@ -380,44 +391,83 @@ with confetti components.
 			<span class="section-label">Active ({entries.length})</span>
 			<div class="chips-row">
 				{#each entries as entry, index (entry.label)}
-					{#if entry.type === 'image'}
-						<div class="chip chip-image-row">
+					<div class="chip chip-sized-row">
+						{#if entry.type === 'color'}
+							<span class="chip-swatch" style:background-color={entry.label}></span>
+						{:else if entry.type === 'image'}
 							<span class="chip-image-label">img</span>
 							<span class="chip-image-name">{entry.label}</span>
+						{:else}
+							<span class="chip-emoji">{entry.label}</span>
+						{/if}
+						{#if entry.type === 'emoji'}
 							<div class="size-inline">
 								<input
 									class="size-input"
-									value={entry.imageWidth ?? 'auto'}
+									value={entry.fontSize ?? DEFAULT_FONT_SIZE}
+									type="number"
+									min="12"
+									max="64"
+									step="1"
+									title="Emoji size in pixels"
+									onchange={(event) =>
+										handleEntryFontSizeChange(index, (event.target as HTMLInputElement).value)} /><span
+									class="size-unit">px</span>
+							</div>
+						{:else if entry.type === 'text'}
+							<div class="size-inline">
+								<input
+									class="size-input"
+									value={entry.fontSize ?? DEFAULT_FONT_SIZE}
+									type="number"
+									min="12"
+									max="64"
+									step="1"
+									title="Text size in pixels"
+									onchange={(event) =>
+										handleEntryFontSizeChange(index, (event.target as HTMLInputElement).value)} /><span
+									class="size-unit">px</span>
+							</div>
+							<input
+								class="chip-color-input"
+								value={entry.textColor ?? '#000000'}
+								type="color"
+								title="Text color"
+								onchange={(event) => handleEntryTextColorChange(index, (event.target as HTMLInputElement).value)} />
+							<select
+								class="chip-font-select"
+								value={entry.fontFamily ?? 'sans-serif'}
+								title="Font family"
+								onchange={(event) => handleEntryFontFamilyChange(index, (event.target as HTMLSelectElement).value)}>
+								{#each FONT_FAMILIES as font (font)}
+									<option value={font}>{font}</option>
+								{/each}
+							</select>
+						{:else}
+							<div class="size-inline">
+								<input
+									class="size-input"
+									value={entry.w ?? 'auto'}
 									type="text"
 									placeholder="auto"
 									title="Width (number or auto)"
-									onchange={(e) => handleImageWidthChange(index, (e.target as HTMLInputElement).value)} /><span
+									onchange={(event) => handleWidthChange(index, (event.target as HTMLInputElement).value)} /><span
 									class="size-unit">w</span>
 							</div>
 							<div class="size-inline">
 								<input
 									class="size-input"
-									value={entry.imageHeight ?? 'auto'}
+									value={entry.h ?? 'auto'}
 									type="text"
 									placeholder="auto"
 									title="Height (number or auto)"
-									onchange={(e) => handleImageHeightChange(index, (e.target as HTMLInputElement).value)} /><span
+									onchange={(event) => handleHeightChange(index, (event.target as HTMLInputElement).value)} /><span
 									class="size-unit">h</span>
 							</div>
-							<button class="chip-remove" type="button" title="Remove" onclick={() => handleRemoveEntry(index)}
-								>&times;</button>
-						</div>
-					{:else}
-						<div class="chip">
-							{#if entry.type === 'color'}
-								<span class="chip-swatch" style:background-color={entry.label}></span>
-							{:else}
-								<span class="chip-emoji">{entry.label}</span>
-							{/if}
-							<button class="chip-remove" type="button" title="Remove" onclick={() => handleRemoveEntry(index)}
-								>&times;</button>
-						</div>
-					{/if}
+						{/if}
+						<button class="chip-remove" type="button" title="Remove" onclick={() => handleRemoveEntry(index)}
+							>&times;</button>
+					</div>
 				{/each}
 			</div>
 		</div>
@@ -728,7 +778,7 @@ with confetti components.
 		line-height: 1;
 	}
 
-	.chip-image-row {
+	.chip-sized-row {
 		gap: 0.375rem;
 		padding: 0.25rem 0.25rem 0.25rem 0.4rem;
 		border-radius: 6px;
@@ -748,6 +798,46 @@ with confetti components.
 		font-size: 0.65rem;
 		text-overflow: ellipsis;
 		white-space: nowrap;
+	}
+
+	.chip-color-input {
+		width: 20px;
+		height: 20px;
+		padding: 0;
+		border: 1px solid #334155;
+		border-radius: 4px;
+		background: none;
+		cursor: pointer;
+	}
+
+	.chip-color-input::-webkit-color-swatch-wrapper {
+		padding: 1px;
+	}
+
+	.chip-color-input::-webkit-color-swatch {
+		border: none;
+		border-radius: 2px;
+	}
+
+	.chip-color-input::-moz-color-swatch {
+		border: none;
+		border-radius: 2px;
+	}
+
+	.chip-font-select {
+		max-width: 6rem;
+		padding: 0.1rem 0.2rem;
+		border: 1px solid #334155;
+		border-radius: 4px;
+		background: #1e293b;
+		color: #e2e8f0;
+		font-size: 0.625rem;
+	}
+
+	.chip-font-select:focus-visible {
+		border-color: #818cf8;
+		outline: none;
+		box-shadow: 0 0 0 2px rgb(129 140 248 / 30%);
 	}
 
 	.chip-remove {
