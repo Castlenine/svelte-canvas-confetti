@@ -1,7 +1,48 @@
-import type { OnCreateParticle, Particle, ParticleStyle, Position } from './types';
+import type {
+	OnCreateParticle,
+	Particle,
+	ParticleStyle,
+	ParticleStyleConfig,
+	ParticleStyleEntry,
+	Position,
+} from '$lib/utils/types';
 
-import { BOUNDARY, DEG_TO_RAD, ROTATION_SPEED } from './constants';
-import { random } from './random';
+import { BOUNDARY, DEG_TO_RAD, ROTATION_SPEED } from '$lib/utils/constants';
+import { random } from '$lib/utils/random';
+
+function isStyleConfig(entry: ParticleStyleEntry): entry is ParticleStyleConfig {
+	return (
+		typeof entry === 'object' && !(entry instanceof HTMLElement) && !(entry instanceof SVGElement) && 'style' in entry
+	);
+}
+
+interface ResolvedSize {
+	w: number;
+	h: number;
+	sizeConfigured: boolean;
+}
+
+function resolveParticleSize(
+	style: ParticleStyle,
+	configW: number | undefined,
+	configH: number | undefined,
+): ResolvedSize {
+	if (style instanceof HTMLCanvasElement || style instanceof HTMLImageElement) {
+		const ASPECT = style.height > 0 ? style.width / style.height : 1;
+
+		if (configW != null && configH != null) return { w: configW, h: configH, sizeConfigured: true };
+		if (configW != null) return { w: configW, h: configW / ASPECT, sizeConfigured: true };
+		if (configH != null) return { w: configH * ASPECT, h: configH, sizeConfigured: true };
+
+		return { w: style.width, h: style.height, sizeConfigured: false };
+	}
+
+	return {
+		w: configW ?? random(18, 10),
+		h: configH ?? random(6, 4),
+		sizeConfigured: configW != null || configH != null,
+	};
+}
 
 interface CreateParticleOptions {
 	context: CanvasRenderingContext2D;
@@ -9,7 +50,7 @@ interface CreateParticleOptions {
 	force: number;
 	angle: number;
 	spread: number;
-	styles: readonly ParticleStyle[];
+	styles: readonly ParticleStyleEntry[];
 	onCreate?: OnCreateParticle;
 }
 
@@ -25,11 +66,16 @@ function createParticle(options: CreateParticleOptions): Particle {
 	let positionY: number;
 	let vx: number;
 	let vy: number;
-	const STYLE = styles[Math.floor(random(styles.length))];
+
+	const ENTRY = styles[Math.floor(random(styles.length))];
+	const IS_CONFIG = isStyleConfig(ENTRY);
+	const STYLE = IS_CONFIG ? ENTRY.style : ENTRY;
+	const CONFIG_W = IS_CONFIG ? ENTRY.w : undefined;
+	const CONFIG_H = IS_CONFIG ? ENTRY.h : undefined;
+
 	let da = random(90, -90);
 
 	if (origin) {
-		// Generate a confetti burst effect using the provided origin coordinates
 		positionX = origin[0];
 		positionY = origin[1];
 		vx = random(force, 5);
@@ -37,7 +83,6 @@ function createParticle(options: CreateParticleOptions): Particle {
 		dir = random(angle + spread / 2, angle - spread / 2) * DEG_TO_RAD;
 		da *= 2;
 	} else {
-		// If no origin is provided, confetti falls from the top edge of the canvas
 		positionX = random(context.canvas.width);
 		positionY = random(-BOUNDARY);
 		vx = random(5);
@@ -47,6 +92,7 @@ function createParticle(options: CreateParticleOptions): Particle {
 
 	const DX = Math.cos(dir);
 	const DY = Math.sin(dir);
+	const SIZE = resolveParticleSize(STYLE, CONFIG_W, CONFIG_H);
 
 	let particle: Particle = {
 		dead: false,
@@ -58,14 +104,39 @@ function createParticle(options: CreateParticleOptions): Particle {
 		da,
 		dx: DX * vx,
 		dy: DY * vy,
-		w: random(18, 10),
-		h: random(6, 4),
+		w: SIZE.w,
+		h: SIZE.h,
 		gy: random(4.5, 2),
 		xw: random(6, 1),
 		style: STYLE,
+		opacity: 1,
+		sizeConfigured: SIZE.sizeConfigured || undefined,
 	};
 
-	if (onCreate) particle = onCreate(particle);
+	if (onCreate) {
+		const AUTO_W = particle.w;
+		const AUTO_H = particle.h;
+		const RESULT = onCreate(particle);
+
+		// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- defensive: user callback may violate its type signature at runtime
+		if (RESULT == null || typeof RESULT !== 'object') {
+			throw new Error('onCreate callback must return a Particle object');
+		}
+
+		particle = RESULT;
+
+		if (STYLE instanceof HTMLCanvasElement || STYLE instanceof HTMLImageElement) {
+			const IS_W_CHANGED = particle.w !== AUTO_W;
+			const IS_H_CHANGED = particle.h !== AUTO_H;
+			const ASPECT = AUTO_H > 0 ? AUTO_W / AUTO_H : 1;
+
+			if (IS_W_CHANGED && !IS_H_CHANGED) {
+				particle.h = particle.w / ASPECT;
+			} else if (!IS_W_CHANGED && IS_H_CHANGED) {
+				particle.w = particle.h * ASPECT;
+			}
+		}
+	}
 
 	return particle;
 }
@@ -75,16 +146,16 @@ function renderParticle(context: CanvasRenderingContext2D, particle: Particle): 
 	const COS = Math.cos(ANGLE_IN_RADIANS);
 	const SIN = Math.sin(ANGLE_IN_RADIANS);
 	context.setTransform(COS, SIN, -SIN, COS, particle.x, particle.y);
+	context.globalAlpha = particle.opacity ?? 1;
 
-	if (particle.style instanceof HTMLImageElement) {
-		context.drawImage(particle.style, -particle.style.width / 2, -particle.style.height / 2);
-	} else if (typeof particle.style === 'string') {
+	if (typeof particle.style === 'string') {
 		context.fillStyle = particle.style;
 		context.fillRect(particle.w * -0.5, particle.h * -0.5, particle.w, particle.h);
 	} else {
-		throw new Error(`Unhandled ParticleStyle type: "${String(particle.style)}"`);
+		context.drawImage(particle.style, -particle.w / 2, -particle.h / 2, particle.w, particle.h);
 	}
 
+	context.globalAlpha = 1;
 	context.setTransform(1, 0, 0, 1, 0, 0);
 }
 
