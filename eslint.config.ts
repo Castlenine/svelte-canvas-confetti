@@ -166,6 +166,7 @@ const CONFIGURATION = defineConfig(
 
 			// ── Correctness (override recommended levels) ──
 			'no-undef': 'off', // TypeScript compiler catches undefined variables; this rule false-positives on global types and ambient declarations
+			'no-useless-assignment': 'error', // May false-positive on Svelte `export let` props read by parent via `bind:` directive, and on module-scoped counter increments used across component instances.
 			'no-loss-of-precision': 'error',
 			'no-nonoctal-decimal-escape': 'error',
 

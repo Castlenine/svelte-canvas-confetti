@@ -27,3 +27,9 @@
 - [ ] `pnpm check` passes (svelte-check)
 - [ ] `pnpm build` succeeds
 - [ ] Breaking changes are documented (if applicable)
+
+## AI Disclosure
+
+- [ ] AI tools were used in this PR
+
+<!-- If checked, briefly note which tools and how they were used (e.g., "GitHub Copilot for initial implementation", "Claude for refactoring suggestions"). -->
