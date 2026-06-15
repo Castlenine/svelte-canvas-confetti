@@ -60,7 +60,16 @@ Sparkle confetti effect. Particles appear at random positions across a defined a
 			h: HAS_EXPLICIT_SIZE ? p.h : random(8, 3),
 		};
 
-		if (onCreate) particle = onCreate(particle);
+		if (onCreate) {
+			const RESULT = onCreate(particle);
+
+			// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- defensive: user callback may violate its type signature at runtime
+			if (RESULT == null || typeof RESULT !== 'object') {
+				throw new Error('onCreate callback must return a Particle object');
+			}
+
+			particle = RESULT;
+		}
 
 		return particle;
 	}

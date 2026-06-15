@@ -84,7 +84,7 @@ function createParticle(options: CreateParticleOptions): Particle {
 		da *= 2;
 	} else {
 		positionX = random(context.canvas.width);
-		positionY = random(-BOUNDARY);
+		positionY = random(0, -BOUNDARY);
 		vx = random(5);
 		vy = random(5, 1);
 		dir = random(180) * DEG_TO_RAD;
@@ -131,9 +131,9 @@ function createParticle(options: CreateParticleOptions): Particle {
 			const ASPECT = AUTO_H > 0 ? AUTO_W / AUTO_H : 1;
 
 			if (IS_W_CHANGED && !IS_H_CHANGED) {
-				particle.h = particle.w / ASPECT;
+				particle = { ...particle, h: particle.w / ASPECT };
 			} else if (!IS_W_CHANGED && IS_H_CHANGED) {
-				particle.w = particle.h * ASPECT;
+				particle = { ...particle, w: particle.h * ASPECT };
 			}
 		}
 	}

@@ -196,63 +196,46 @@ showing how to use the currently configured effect, with syntax highlighting and
 			};
 		}
 
-		const IMPORTS: string[] = [];
-		const STYLE_ITEMS: string[] = [];
-		const SETUP_LINES: string[] = [];
-		let hasAsync = false;
+		const IMPORTS = EMOJIS.length > 0 ? ['createTextStyle'] : [];
+		const HAS_ASYNC = IMAGES.length > 0;
 
-		COLORS.forEach((entry) => {
-			STYLE_ITEMS.push(formatStyleItem(`'${entry.label}'`, entry));
-		});
-
-		if (EMOJIS.length > 0) {
-			IMPORTS.push('createTextStyle');
-
-			EMOJIS.forEach((entry) => {
-				STYLE_ITEMS.push(formatStyleItem(formatTextStyleCall(entry), entry));
-			});
-		}
-
-		if (IMAGES.length > 0) {
-			hasAsync = true;
-
-			IMAGES.forEach((entry, index) => {
+		const STYLE_ITEMS = [
+			...COLORS.map((entry) => formatStyleItem(`'${entry.label}'`, entry)),
+			...EMOJIS.map((entry) => formatStyleItem(formatTextStyleCall(entry), entry)),
+			...IMAGES.map((entry, index) => {
 				const VAR_NAME = IMAGES.length === 1 ? 'IMAGE' : `IMAGE_${index + 1}`;
 
-				if (index === 0) {
-					SETUP_LINES.push(`    // For optimized imports, use $lib/assets — see README:`);
-					SETUP_LINES.push(
-						`    // https://github.com/Castlenine/svelte-canvas-confetti?tab=readme-ov-file#image-handling`,
-					);
-				}
+				return formatStyleItem(VAR_NAME, entry);
+			}),
+		];
 
-				if (index >= 1) {
-					SETUP_LINES.push('');
-				}
+		const SETUP_LINES = IMAGES.flatMap((entry, index) => {
+			const VAR_NAME = IMAGES.length === 1 ? 'IMAGE' : `IMAGE_${index + 1}`;
+			const LINES: string[] = [];
 
-				SETUP_LINES.push(`    const ${VAR_NAME} = new Image();`);
-				SETUP_LINES.push(`    ${VAR_NAME}.src = 'path/to/${entry.label}';`);
-				SETUP_LINES.push(`    await ${VAR_NAME}.decode();`);
-				STYLE_ITEMS.push(formatStyleItem(VAR_NAME, entry));
-			});
-		}
+			if (index === 0) {
+				LINES.push(`    // For optimized imports, use $lib/assets — see README:`);
+				LINES.push(`    // https://github.com/Castlenine/svelte-canvas-confetti?tab=readme-ov-file#image-handling`);
+			}
+
+			if (index >= 1) {
+				LINES.push('');
+			}
+
+			LINES.push(`    const ${VAR_NAME} = new Image();`);
+			LINES.push(`    ${VAR_NAME}.src = 'path/to/${entry.label}';`);
+			LINES.push(`    await ${VAR_NAME}.decode();`);
+
+			return LINES;
+		});
 
 		const STYLES_ARRAY = `[${STYLE_ITEMS.join(', ')}]`;
 
-		if (hasAsync) {
-			return {
-				imports: IMPORTS,
-				setupCode: SETUP_LINES.join('\n'),
-				stylesExpr: STYLES_ARRAY,
-				hasAsync: true,
-			};
-		}
-
 		return {
 			imports: IMPORTS,
-			setupCode: '',
+			setupCode: HAS_ASYNC ? SETUP_LINES.join('\n') : '',
 			stylesExpr: STYLES_ARRAY,
-			hasAsync: false,
+			hasAsync: HAS_ASYNC,
 		};
 	}
 
