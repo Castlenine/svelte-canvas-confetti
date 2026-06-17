@@ -23,7 +23,6 @@ pre-commit:
     universal-checks:
       priority: 2
       # Runs AFTER style-pipeline has completed. Uses main lint-staged config.
-      # Duplicate "eslint --fix" is intentional: runs before and after enforce-conventions.
       run: pnpm exec lint-staged --config .lintstagedrc.json --concurrent false
 
     ggshield:
