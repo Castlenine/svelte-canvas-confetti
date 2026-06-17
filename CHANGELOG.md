@@ -159,6 +159,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 > **Legacy releases** below target Svelte 3 / 4 on the `v1/*` branches. For new projects, use v5.x (`latest`).
 
+## [1.3.1] - 2026-06-15
+
+### Changed
+
+- `random` and `coinFlip` converted from arrow functions to function declarations (`random.ts`)
+- `random()` now validates inputs — throws on `NaN`, `Infinity`, or `min > max` (`random.ts`)
+- `random(-BOUNDARY)` call replaced with explicit `random(0, -BOUNDARY)` range in `createParticle` (`particle.ts`)
+- Aspect-ratio auto-correction in `createParticle` now uses immutable spread instead of direct mutation (`particle.ts`)
+- `onCreate` return validation added to `ConfettiSparkle` — matches existing validation in `createParticle` (`ConfettiSparkle.svelte`)
+
+### Demo
+
+- Refactored imperative `forEach`/`push` array building to declarative `map`/`flatMap` in code example generator (`CodeExample.svelte`)
+
 ## [1.3.0] - 2026-06-15
 
 ### Added
@@ -301,6 +315,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 [5.0.2]: https://github.com/Castlenine/svelte-canvas-confetti/compare/v5.0.1...v5.0.2
 [5.0.1]: https://github.com/Castlenine/svelte-canvas-confetti/compare/v5.0.0...v5.0.1
 [5.0.0]: https://github.com/Castlenine/svelte-canvas-confetti/releases/tag/v5.0.0
+[1.3.1]: https://github.com/Castlenine/svelte-canvas-confetti/compare/v1.3.0...v1.3.1
 [1.3.0]: https://github.com/Castlenine/svelte-canvas-confetti/compare/v1.2.1...v1.3.0
 [1.2.1]: https://github.com/Castlenine/svelte-canvas-confetti/compare/v1.2.0...v1.2.1
 [1.2.0]: https://github.com/Castlenine/svelte-canvas-confetti/compare/v1.1.0...v1.2.0
