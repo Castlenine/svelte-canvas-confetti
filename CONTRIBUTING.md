@@ -41,10 +41,12 @@ Whether you are reporting a bug, suggesting a feature, or submitting a pull requ
 
 1. Create a branch from the appropriate base branch:
 
-  | Base branch | Use for                     |
-  | ----------- | --------------------------- |
-  | `main`      | Current version (Svelte 5)  |
-  | `v1/main`   | Legacy support (Svelte 3/4) |
+| Base branch | Use for                     |
+| ----------- | --------------------------- |
+| `main`      | Current version (Svelte 5)  |
+| `v1/main`   | Legacy support (Svelte 3/4) |
+
+You will later open your pull request against the matching branch (`development` or `v1/development`) — see [Pull Requests](#pull-requests).
 
 2. Make your changes.
 3. Push your branch and open a pull request.
@@ -119,7 +121,7 @@ Optionally, you can use `pnpm commit` to launch the interactive Commitizen promp
 
 Using LLMs, AI agents, or similar tools during development is perfectly fine. What matters is transparency.
 
-As the maintainer, I use AI agents to challenge my own biases, review technical approaches, and [mostly for grammar correction](https://github.com/Castlenine/ai-text-humanizer).
+As the maintainer, I use AI agents to challenge my own biases, review technical approaches, and mostly for grammar correction.
 
 Being open about this helps everyone understand how the code was written and why we made specific decisions.
 
