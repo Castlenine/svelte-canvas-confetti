@@ -65,7 +65,9 @@ rules:
         - css-appearance
         - css-boxshadow
         - css-cascade-layers
+        - css-clip-path
         - css-display-contents
+        - css-filters
         - css-fixed
         - css-focus-visible
         - css-gradients
@@ -88,6 +90,7 @@ rules:
         - css-variables
         - css3-cursors
         - flexbox
+        - individual-transforms
         - intrinsic-width
         - kerning-pairs-ligatures
         - object-fit
@@ -652,6 +655,9 @@ rules:
       - groupName: 'Alteration'
         properties:
           - filter
+          - scale
+          - rotate
+          - backface-visibility
           - transform
           - transform-origin
           - transform-box
